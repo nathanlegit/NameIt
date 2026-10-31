@@ -1,0 +1,16 @@
+# Secrets: never commit. Copy .env.example to .env.local instead.
+.env
+.env.local
+.env.*.local
+
+# Videos, frames and pipeline outputs. Third-party video must never be committed.
+data/
+*.mp4
+*.mov
+*.webm
+*.wav
+
+node_modules/
+.next/
+dist/
+.DS_Store

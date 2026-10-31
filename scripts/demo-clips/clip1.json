@@ -1,0 +1,51 @@
+{
+  "name": "clip1",
+  "description": "Spike clip: spooning flour from a paper bag into a bowl, then folding banana bread batter. Two Pexels clips joined, with ElevenLabs narration placed at the moments the actions happen.",
+  "sources": [
+    {
+      "pexelsId": 6901285,
+      "pageUrl": "https://www.pexels.com/video/a-person-putting-powder-on-a-bowl-6901285/",
+      "creator": "Mikhail Nilov",
+      "licence": "Pexels License"
+    },
+    {
+      "pexelsId": 6829249,
+      "pageUrl": "https://www.pexels.com/video/a-person-mixing-ingredients-in-a-bowl-6829249/",
+      "creator": "Taryn Elliott",
+      "licence": "Pexels License"
+    }
+  ],
+  "lines": [
+    { "start": 0.3,  "text": "Okay, let's start with the flour." },
+    { "start": 3.0,  "text": "Everything goes in here.",
+      "expected": [{ "phrase": "here", "isVisual": true, "kind": "location", "referent": "the cream mixing bowl on the counter" }] },
+    { "start": 6.0,  "text": "Take a spoon of this.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the flour in the white paper bag" }] },
+    { "start": 9.4,  "text": "This part is really easy.",
+      "expected": [{ "phrase": "This", "isVisual": false, "kind": null, "referent": "(not visual: refers to the step)" }] },
+    { "start": 11.8, "text": "About this much each time.",
+      "expected": [{ "phrase": "this much", "isVisual": true, "kind": "amount", "referent": "a heaped spoonful of flour" }] },
+    { "start": 14.3, "text": "And it goes in there.",
+      "expected": [{ "phrase": "there", "isVisual": true, "kind": "location", "referent": "into the cream mixing bowl" }] },
+    { "start": 18.0, "text": "Then one more, just like that.",
+      "expected": [{ "phrase": "like that", "isVisual": true, "kind": "amount", "referent": "another spoonful of flour" }] },
+    { "start": 21.3, "text": "That's the dry mix done.",
+      "expected": [{ "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to the step)" }] },
+    { "start": 25.0, "text": "Now I've mashed in three ripe bananas, and I'm folding in some walnuts." },
+    { "start": 30.6, "text": "Use one of these to scrape down the sides.",
+      "expected": [{ "phrase": "these", "isVisual": true, "kind": "object", "referent": "the pink silicone spatula" }] },
+    { "start": 34.4, "text": "Keep folding it like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "folding the batter over with the spatula, turning the bowl" }] },
+    { "start": 38.4, "text": "Keep that jar right there, you'll want more later.",
+      "expected": [
+        { "phrase": "that", "isVisual": true, "kind": "object", "referent": "the glass jar of walnuts" },
+        { "phrase": "right there", "isVisual": true, "kind": "location", "referent": "on the counter, to the right of the mixing bowl" }
+      ] },
+    { "start": 44.0, "text": "Honestly, that's the secret.",
+      "expected": [{ "phrase": "that", "isVisual": false, "kind": null, "referent": "(not visual: refers to the folding technique)" }] },
+    { "start": 48.0, "text": "You want it to look like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "state", "referent": "thick, lumpy pale batter with streaks of banana, held up on the spatula" }] },
+    { "start": 61.8, "text": "Done when it falls off like that.",
+      "expected": [{ "phrase": "like that", "isVisual": true, "kind": "state", "referent": "batter dropping off the spatula in thick clumps" }] }
+  ]
+}

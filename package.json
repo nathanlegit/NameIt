@@ -1,0 +1,26 @@
+{
+  "name": "name-it",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Name It: resolves 'this', 'that' and 'like this' in how-to videos for blind and low-vision viewers.",
+  "scripts": {
+    "spike": "tsx spike/m0-spike.ts",
+    "build-clip": "tsx scripts/build-demo-clip.ts",
+    "add-video": "tsx src/pipeline/addVideo.ts",
+    "pipeline": "tsx src/pipeline/run.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@meta-sam/parser": "^0.1.0",
+    "openai": "^4.104.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
