@@ -21,6 +21,32 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 31 Oct 2026: M2 (context, detect, localise, ground)
+
+**Result on 2 clips** (clip1 cooking, 65 s; clip2 gardening, 28 s; scripts and expected answers in `scripts/demo-clips/`):
+
+| | clip1 | clip2 |
+|---|---|---|
+| Scripted visual references found | 11/11 | 7/7 |
+| Decoys rejected | 3/3 | 3/3 (including existential "there is") |
+| Grounded to the intended object (checked by eye) | 11/11 | 7/7 |
+| Stages 03 to 06: time / cost | 134 s / $0.83 (first run) | 81 s / $0.50 |
+
+Still one person's judgement on two scripted clips; the M3 eval makes the measured claim.
+
+Decisions:
+- **SAM grounding uses video tracking, not a single frame.** A 3 s, 10 fps clip around the chosen moment (inline base64 `input_video`, no Files API upload). Each concept is tracked with a stable object id, so hand contact is measured over 30 frames and motion (PRD rule 2) is implemented. Verified live first (`spike/probe-sam-video.ts`). Cost $0.01 per concept (50-frame minimum).
+- **SAM's raw output text is cached and re-parsed offline** (`parseVideoRawOutput`), so the cache holds exactly what the API returned. Re-parsing gave identical records to the live parse. A trimmed real response is the SAM fixture test.
+- **Spark responses are cached by a hash of the exact request** (prompt, schema, temperature, image bytes). A changed prompt or transcript can never serve a stale answer.
+- **Selection is tiered:** if SAM finds anything for Spark's specific phrase, only those objects are candidates; the head noun is the fallback. This fixed the M0 wrong-jar case (now a unit test). Then a weighted score: hand contact (weighted by kind: 1.0 object/amount/action, 0.6 state, 0.3 location), motion 0.5, centre 0.3, size 0.2, SAM confidence 0.2. All weights are first guesses, to be tuned on the eval set.
+- **F4 window is no longer clamped to the turn** (reverses the PRD detail). With M1's precise turns, "Take a spoon of this" is 1 s long but the spoonful is shown just after it; clamping left Spark two frames, both too early. The window is now ±1.5 s around the estimate, clamped only to the video.
+- **The localise prompt gives per-kind guidance and asks for fallback concepts.** First run: "it goes in *there*" was resolved to the bag being moved, not the bowl; "falls off like that" got no box (an 8-word phrase was skipped, and SAM finds nothing for "spatula" covered in batter). Fix: a location means "the place something is put, not the thing moved"; a state means "the container or tool holding the substance"; the phrase is capped at 6 words; up to 2 `alternativeConcepts` are tried only if both main concepts find nothing. Second run: 13/13 grounded, both failures fixed, and fallbacks were never needed.
+- **Negative result: SAM struggles with shapeless stuff on its own** ("batter" found nothing). The prompt now steers towards the container or tool holding it.
+- **Glossary entries have a `kind`**, with "mixture" marking names that can go stale (the M0 "dry mix" problem). Resolution (M3) will use it.
+- **Known limitation:** motion is measured in screen space, so a moving camera inflates it. Fine for steady how-to shots; noted for the eval.
+
+Test set status: 24 labels (18 visual, 6 decoys) from 2 clips, generated from the scripts by `pnpm make-labels` and needing Nathan's read-through. The PRD target is 60 to 100 references from 5 to 8 clips, plus 2 held-out clips never used for tuning. Both clips here have now been used for tuning, so they can't be held out.
+
 ## 31 Oct 2026: M1 (skeleton, ingest, transcribe)
 
 - **Transcription is segmented locally (replaces whole-file ENDPOINTING).** Stage 02 runs ffmpeg `silencedetect` (−35 dB, at least 0.4 s), cuts each speech segment (padded 0.15 s each side) and transcribes it alone, 8 at a time. Turn times are the segment bounds, measured from the audio. On clip1: 15 turns for 15 narration lines (whole-file ENDPOINTING gave 5), every start within 0.1 s of where the line was placed, all 15 gaps real.

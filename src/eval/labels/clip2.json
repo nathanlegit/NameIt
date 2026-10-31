@@ -1,0 +1,82 @@
+[
+  {
+    "videoId": "clip2",
+    "time": 0,
+    "phrase": "right here",
+    "isVisual": true,
+    "trueReferent": "the hole in the black membrane under the fingertip",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 2.9,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the pepper seedling",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 4.6,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "pressing the soil around the seedling with the fingertips",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 12,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the step)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 14,
+    "phrase": "there",
+    "isVisual": true,
+    "trueReferent": "the next hole in the membrane",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 17,
+    "phrase": "this one",
+    "isVisual": true,
+    "trueReferent": "the second pepper seedling",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 18.8,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "pressing the soil on both sides of the seedling with two fingers",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 23.2,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "the seedling standing upright in firmed soil in its hole",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 25.6,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the process)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip2",
+    "time": 25.6,
+    "phrase": "there",
+    "isVisual": false,
+    "trueReferent": "(not visual: existential 'there is')",
+    "acceptableAlternatives": []
+  }
+]

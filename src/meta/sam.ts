@@ -16,11 +16,15 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
+  formats,
   parseImageStream,
+  parseVideoStream,
   recordsOfKind,
   type ImageSegmentationResult,
   type ResponsesEvent,
   type SegmentationMask,
+  type SegmentationResult,
+  type VideoSegmentationResult,
 } from "@meta-sam/parser";
 import { metaClient } from "./client";
 
@@ -93,19 +97,11 @@ function imageMimeType(imagePath: string): string {
   return "image/jpeg";
 }
 
-// Segments every instance of `concept` in one image.
-// Pricing: $2.50 per 1,000 images, so each call costs a quarter of a cent.
-export async function segmentImageRaw(
-  imagePath: string,
-  concept: string,
-): Promise<ImageSegmentationResult> {
+// Opens a streaming SAM request: one concept phrase plus one media part.
+async function startSamStream(concept: string, mediaPart: Record<string, unknown>) {
   const phrase = concept.trim();
   if (!phrase) throw new Error("SAM needs a short, non-empty noun phrase.");
-
-  const bytes = await readFile(imagePath);
-  const imageDataUrl = `data:${imageMimeType(imagePath)};base64,${bytes.toString("base64")}`;
-
-  const stream = await metaClient().responses.create({
+  return metaClient().responses.create({
     model: SAM_MODEL,
     stream: true,
     // Ask for per-object confidence (the "c" field). Metadata values are strings.
@@ -114,16 +110,13 @@ export async function segmentImageRaw(
       {
         type: "message",
         role: "user",
-        content: [
-          { type: "input_text", text: phrase },
-          { type: "input_image", image_url: imageDataUrl },
-        ],
+        content: [{ type: "input_text", text: phrase }, mediaPart],
       },
     ] as never,
   });
+}
 
-  const result = await parseImageStream(withOutputTextDone(stream)).finalResult;
-
+function assertCompleteResult(result: SegmentationResult): void {
   if (result.outcome.status !== "completed") {
     throw new Error(`SAM segmentation was incomplete: ${result.outcome.reason} ${result.outcome.detail ?? ""}`);
   }
@@ -131,7 +124,90 @@ export async function segmentImageRaw(
   if (parserErrors.length > 0) {
     throw new Error(`SAM parser errors: ${parserErrors.map((item) => item.message).join("; ")}`);
   }
+}
+
+// Segments every instance of `concept` in one image.
+// Pricing: $2.50 per 1,000 images, so each call costs a quarter of a cent.
+export async function segmentImageRaw(
+  imagePath: string,
+  concept: string,
+): Promise<ImageSegmentationResult> {
+  const bytes = await readFile(imagePath);
+  const imageDataUrl = `data:${imageMimeType(imagePath)};base64,${bytes.toString("base64")}`;
+  const stream = await startSamStream(concept, { type: "input_image", image_url: imageDataUrl });
+  const result = await parseImageStream(withOutputTextDone(stream)).finalResult;
+  assertCompleteResult(result);
   return result;
+}
+
+// Segments and TRACKS every instance of `concept` through a short video clip.
+// Each object keeps the same objectId across frames, which is what lets us
+// measure motion and hand contact over time. The clip is sent inline as a
+// base64 data URL (allowed by the docs), so no Files API upload is needed.
+// Pricing: $0.20 per 1,000 frames, minimum 50 frames per request.
+export async function segmentVideoRaw(
+  videoPath: string,
+  concept: string,
+): Promise<VideoSegmentationResult> {
+  const bytes = await readFile(videoPath);
+  const videoDataUrl = `data:video/mp4;base64,${bytes.toString("base64")}`;
+  const stream = await startSamStream(concept, { type: "input_video", video_url: videoDataUrl });
+  const result = await parseVideoStream(withOutputTextDone(stream)).finalResult;
+  assertCompleteResult(result);
+  return result;
+}
+
+// Re-parses SAM's raw output text (result.rawOutput) without calling the API.
+// We cache the raw text rather than parsed objects, so the cache holds exactly
+// what SAM returned and any cache file can double as a test fixture.
+export function parseVideoRawOutput(rawOutput: string): VideoSegmentationResult {
+  const parser = formats.segmentation.video().createParser();
+  parser.push(rawOutput, { emit: false });
+  return parser.finish({ status: "completed" }).result;
+}
+
+// One box (and mask) for one object in one frame.
+export interface TrackedBox {
+  frameIndex: number;
+  box: PixelBox;
+  confidence: number | null;
+  mask: SegmentationMask | null;
+}
+
+// One object followed through the clip. An image is a one-frame clip.
+export interface ObjectTrack {
+  concept: string;   // the phrase SAM was given
+  objectId: string;  // stable across frames within one SAM response
+  boxes: TrackedBox[]; // sorted by frameIndex; frames where the object is hidden are absent
+}
+
+// Groups SAM's per-frame records into one track per object.
+export function toTracks(result: SegmentationResult, concept: string): ObjectTrack[] {
+  const maskByKey = new Map<string, SegmentationMask>();
+  for (const maskRecord of recordsOfKind(result.records, "mask")) {
+    maskByKey.set(`${maskRecord.objectId}@${maskRecord.frame?.frameIndex ?? 0}`, maskRecord.mask);
+  }
+
+  const boxesByObject = new Map<string, TrackedBox[]>();
+  for (const boxRecord of recordsOfKind(result.records, "box")) {
+    const frameIndex = boxRecord.frame?.frameIndex ?? 0;
+    const trackedBox: TrackedBox = {
+      frameIndex,
+      box: { left: boxRecord.left, top: boxRecord.top, right: boxRecord.right, bottom: boxRecord.bottom },
+      confidence: boxRecord.confidence ?? null,
+      mask: maskByKey.get(`${boxRecord.objectId}@${frameIndex}`) ?? null,
+    };
+    const existing = boxesByObject.get(boxRecord.objectId) ?? [];
+    existing.push(trackedBox);
+    boxesByObject.set(boxRecord.objectId, existing);
+  }
+
+  return [...boxesByObject.entries()].map(([objectId, boxes]) => ({
+    concept,
+    objectId,
+    // Frames can arrive out of order (forward pass, then backward), so sort.
+    boxes: boxes.sort((first, second) => first.frameIndex - second.frameIndex),
+  }));
 }
 
 // Pairs each object's box record with its mask record (they share objectId).

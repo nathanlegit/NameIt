@@ -8,6 +8,7 @@
     "spike": "tsx spike/m0-spike.ts",
     "build-clip": "tsx scripts/build-demo-clip.ts",
     "add-video": "tsx src/pipeline/addVideo.ts",
+    "make-labels": "tsx scripts/make-labels.ts",
     "pipeline": "tsx src/pipeline/run.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

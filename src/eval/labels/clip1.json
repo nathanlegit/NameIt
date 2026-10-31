@@ -1,0 +1,114 @@
+[
+  {
+    "videoId": "clip1",
+    "time": 3,
+    "phrase": "here",
+    "isVisual": true,
+    "trueReferent": "the cream mixing bowl on the counter",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 6,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the flour in the white paper bag",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 9.4,
+    "phrase": "This",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the step)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 11.8,
+    "phrase": "this much",
+    "isVisual": true,
+    "trueReferent": "a heaped spoonful of flour",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 14.3,
+    "phrase": "there",
+    "isVisual": true,
+    "trueReferent": "into the cream mixing bowl",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 18,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "another spoonful of flour",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 21.3,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the step)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 30.6,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the pink silicone spatula",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 34.4,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "folding the batter over with the spatula, turning the bowl",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 38.4,
+    "phrase": "that",
+    "isVisual": true,
+    "trueReferent": "the glass jar of walnuts",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 38.4,
+    "phrase": "right there",
+    "isVisual": true,
+    "trueReferent": "on the counter, to the right of the mixing bowl",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 44,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the folding technique)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 48,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "thick, lumpy pale batter with streaks of banana, held up on the spatula",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip1",
+    "time": 61.8,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "batter dropping off the spatula in thick clumps",
+    "acceptableAlternatives": []
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "name": "clip2",
+  "description": "Non-cooking clip: planting pepper seedlings through holes in weed membrane, with pointing. One Pexels clip, ElevenLabs narration placed at the moments the actions happen.",
+  "sources": [
+    {
+      "pexelsId": 9737847,
+      "pageUrl": "https://www.pexels.com/video/a-person-planting-a-seeds-9737847/",
+      "creator": "Kelly (https://www.pexels.com/@kelly/)",
+      "licence": "Pexels License"
+    }
+  ],
+  "lines": [
+    { "start": 0.0, "text": "Right, poke a hole right here first.",
+      "expected": [{ "phrase": "right here", "isVisual": true, "kind": "location", "referent": "the hole in the black membrane under the fingertip" }] },
+    { "start": 2.9, "text": "Then drop this in.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the pepper seedling" }] },
+    { "start": 4.6, "text": "Firm it down like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "pressing the soil around the seedling with the fingertips" }] },
+    { "start": 8.0, "text": "I'm planting pepper seedlings through weed membrane today." },
+    { "start": 12.0, "text": "That's the easy part.",
+      "expected": [{ "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to the step)" }] },
+    { "start": 14.0, "text": "Same again. Push your finger in there.",
+      "expected": [{ "phrase": "there", "isVisual": true, "kind": "location", "referent": "the next hole in the membrane" }] },
+    { "start": 17.0, "text": "And pop this one in.",
+      "expected": [{ "phrase": "this one", "isVisual": true, "kind": "object", "referent": "the second pepper seedling" }] },
+    { "start": 18.8, "text": "Press both sides, like that.",
+      "expected": [{ "phrase": "like that", "isVisual": true, "kind": "action", "referent": "pressing the soil on both sides of the seedling with two fingers" }] },
+    { "start": 23.2, "text": "You want it standing up like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "state", "referent": "the seedling standing upright in firmed soil in its hole" }] },
+    { "start": 25.6, "text": "That's all there is to it.",
+      "expected": [
+        { "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to the process)" },
+        { "phrase": "there", "isVisual": false, "kind": null, "referent": "(not visual: existential 'there is')" }
+      ] }
+  ]
+}

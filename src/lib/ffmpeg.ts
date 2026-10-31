@@ -67,6 +67,45 @@ export async function cutAudio(wavPath: string, startSec: number, endSec: number
   ]);
 }
 
+// Logs every frame where the picture changes a lot (a cut or a big camera move).
+// Run on a small copy of the picture: scene detection doesn't need 4K.
+// Parse the result with parseSceneChangeTimes().
+export const SCENE_CHANGE_THRESHOLD = 0.3; // 0 = identical frames, 1 = completely different
+
+export async function detectSceneChangeLog(videoPath: string): Promise<string> {
+  return runCommandForStderr("ffmpeg", [
+    "-hide_banner", "-nostats",
+    "-i", videoPath,
+    "-an",
+    "-vf", `scale=320:-2,select='gt(scene,${SCENE_CHANGE_THRESHOLD})',showinfo`,
+    "-f", "null", "-",
+  ]);
+}
+
+export const GROUNDING_CLIP_FPS = 10;
+
+// Cuts a short silent clip for SAM video tracking, scaled exactly like the
+// 2 fps frames (max 1280 wide), so SAM's pixel coordinates line up with them.
+// Frame k of the clip shows time startSec + k / GROUNDING_CLIP_FPS.
+export async function cutVideoClip(
+  videoPath: string,
+  startSec: number,
+  durationSec: number,
+  outputPath: string,
+): Promise<void> {
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await runCommand("ffmpeg", [
+    "-y", "-loglevel", "error",
+    "-ss", startSec.toFixed(3),   // before -i: fast seek (frame-accurate when re-encoding)
+    "-i", videoPath,
+    "-t", durationSec.toFixed(3),
+    "-an",
+    "-vf", `fps=${GROUNDING_CLIP_FPS},scale='min(${FRAME_MAX_WIDTH},iw)':-2`,
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "23",
+    outputPath,
+  ]);
+}
+
 export interface ProbedVideo {
   durationSec: number;
   width: number;

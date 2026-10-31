@@ -16,6 +16,13 @@ export async function cachedJson<T>(filePath: string, compute: () => Promise<T>)
   return value;
 }
 
+export async function readJson<T>(filePath: string): Promise<T> {
+  if (!existsSync(filePath)) {
+    throw new Error(`Missing ${filePath}. Run the earlier pipeline stage that produces it.`);
+  }
+  return JSON.parse(await readFile(filePath, "utf8")) as T;
+}
+
 export async function writeJson(filePath: string, value: unknown): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);

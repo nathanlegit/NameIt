@@ -22,7 +22,7 @@ import { writeFile } from "node:fs/promises";
 import { loadLocalEnv } from "../src/meta/client";
 import { transcribeWav, toTurns } from "../src/meta/transcribe";
 import { askSparkForJson } from "../src/meta/spark";
-import { segmentImageRaw, toDetections, type SamDetection } from "../src/meta/sam";
+import { segmentImageRaw, toDetections, type ObjectTrack, type SamDetection } from "../src/meta/sam";
 import { cachedJson, writeJson } from "../src/lib/cache";
 import { probeVideo, extractAudio, sampleFrames, drawBoxesOnImage, type BoxToDraw } from "../src/lib/ffmpeg";
 import { findDeicticCandidates, markPhraseInText, type DeicticMatch } from "../src/lib/deixis";
@@ -52,7 +52,7 @@ import {
   resolveReferenceSystem,
   type ResolveReferenceOutput,
 } from "../src/prompts/resolveReference";
-import type { Turn } from "../src/types";
+import type { ReferenceKind, Turn } from "../src/types";
 
 // Prices from PRD 11.1 (Model API, Standard tier), for the cost line in the report.
 const SPARK_DOLLARS_PER_INPUT_TOKEN = 1.25 / 1_000_000;
@@ -268,27 +268,55 @@ async function segmentCached(
   return detections;
 }
 
+// The pipeline's selector works on tracks over time; a still image is a one-frame track.
+function detectionsAsTracks(detections: SamDetection[]): ObjectTrack[] {
+  return detections.map((detection) => ({
+    concept: detection.concept,
+    objectId: detection.objectId,
+    boxes: [{ frameIndex: 0, box: detection.box, confidence: detection.confidence, mask: detection.mask }],
+  }));
+}
+
 async function ground(
   context: SpikeContext,
   referenceId: string,
   bestFramePath: string,
   localised: LocaliseReferenceOutput,
+  kind: ReferenceKind,
 ): Promise<GroundStepResult> {
   const concepts = conceptsToTry(localised);
   const detectionCounts: Record<string, number> = {};
-  const candidateDetections: SamDetection[] = [];
+  const detectionsByConcept = new Map<string, SamDetection[]>();
   for (const concept of concepts) {
     const detections = await segmentCached(context, referenceId, bestFramePath, concept);
     detectionCounts[concept] = detections.length;
-    candidateDetections.push(...detections);
+    detectionsByConcept.set(concept, detections);
   }
   const handDetections = await segmentCached(context, referenceId, bestFramePath, "hand");
 
-  const selection = selectReferent(candidateDetections, handDetections, context.frameSize);
-  const chosen = selection.chosen?.detection ?? null;
+  // conceptsToTry puts the head noun first and Spark's fuller guess second.
+  const [headNounConcept, specificConcept] = concepts;
+  const selection = selectReferent({
+    specificTracks: specificConcept ? detectionsAsTracks(detectionsByConcept.get(specificConcept) ?? []) : [],
+    headNounTracks: detectionsAsTracks(detectionsByConcept.get(headNounConcept!) ?? []),
+    handTracks: detectionsAsTracks(handDetections),
+    bestFrameIndex: 0,
+    frameSize: context.frameSize,
+    kind,
+  });
+  const chosenTrack = selection.chosen;
+  const chosen: SamDetection | null = chosenTrack
+    ? {
+        concept: chosenTrack.track.concept,
+        objectId: chosenTrack.track.objectId,
+        box: chosenTrack.boxAtBestFrame.box,
+        confidence: chosenTrack.boxAtBestFrame.confidence,
+        mask: chosenTrack.boxAtBestFrame.mask,
+      }
+    : null;
 
   const boxesToDraw: BoxToDraw[] = [
-    ...selection.ranked.slice(1).map((other) => ({ box: other.detection.box, colour: "red", thickness: 2 })),
+    ...selection.ranked.slice(1).map((other) => ({ box: other.boxAtBestFrame.box, colour: "red", thickness: 2 })),
     ...handDetections.map((hand) => ({ box: hand.box, colour: "yellow", thickness: 3 })),
     ...(chosen ? [{ box: chosen.box, colour: "lime", thickness: 6 }] : []),
   ];
@@ -523,7 +551,7 @@ async function main(): Promise<void> {
 
       const localised = await localise(context, match, turn, kind);
       const bestFramePath = framePath(context.framesDir, localised.bestFrameNumber);
-      const grounding = await ground(context, referenceId, bestFramePath, localised.sparkOutput);
+      const grounding = await ground(context, referenceId, bestFramePath, localised.sparkOutput, kind);
       const resolution = await resolve(context, referenceId, turn, match, kind, bestFramePath, grounding);
       console.log(`      -> ${resolution.resolvedText ?? "(abstained)"} [${resolution.confidence.toFixed(2)}]`);
 

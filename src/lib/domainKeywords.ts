@@ -17,6 +17,10 @@ const KEYWORDS_BY_DOMAIN: Record<string, string[]> = {
     "glue gun", "craft knife", "cutting mat", "embroidery hoop", "crochet hook",
     "knitting needle", "yarn", "felt", "pliers", "jump ring",
   ],
+  gardening: [
+    "seedling", "seedlings", "weed membrane", "trowel", "dibber", "compost",
+    "potting mix", "secateurs", "watering can", "root ball", "seed tray",
+  ],
   assembly: [
     "Allen key", "hex key", "dowel", "cam lock", "screwdriver", "Phillips",
     "flathead", "bracket", "washer", "wing nut",

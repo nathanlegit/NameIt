@@ -23,11 +23,14 @@ export interface TimeWindow {
   end: Seconds;
 }
 
-// Window = estimate ± 1.5 s, clamped so it never leaves the turn.
-export function windowAroundEstimate(turn: Turn, estimatedTime: Seconds): TimeWindow {
+// Window = estimate ± 1.5 s, clamped to `bounds`.
+// The pipeline passes the whole video as bounds, not the turn: presenters often
+// show the thing just after saying "this", and since M1 turns are short and
+// precise, clamping to the turn would cut that moment off (see DECISIONS.md).
+export function windowAroundEstimate(bounds: TimeWindow, estimatedTime: Seconds): TimeWindow {
   return {
-    start: Math.max(turn.start, estimatedTime - LOCALISATION_HALF_WINDOW_SEC),
-    end: Math.min(turn.end, estimatedTime + LOCALISATION_HALF_WINDOW_SEC),
+    start: Math.max(bounds.start, estimatedTime - LOCALISATION_HALF_WINDOW_SEC),
+    end: Math.min(bounds.end, estimatedTime + LOCALISATION_HALF_WINDOW_SEC),
   };
 }
 

@@ -15,11 +15,15 @@ import { writeJson } from "../lib/cache";
 import { loadLocalEnv } from "../meta/client";
 import { ingestStage } from "./01_ingest";
 import { transcribeStage } from "./02_transcribe";
+import { contextStage } from "./03_context";
+import { detectStage } from "./04_detect";
+import { localiseStage } from "./05_localise";
+import { groundStage } from "./06_ground";
 import type { Stage } from "./stage";
 import { readVideoMeta, videoPaths, writeVideoMeta } from "./store";
 
-// Stages 03 to 09 join this list in M2 and M3.
-const STAGES: Stage[] = [ingestStage, transcribeStage];
+// Stages 07 to 09 join this list in M3.
+const STAGES: Stage[] = [ingestStage, transcribeStage, contextStage, detectStage, localiseStage, groundStage];
 
 interface RunLogEntry {
   stage: string;

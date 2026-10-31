@@ -3,9 +3,10 @@
 // so you can open any stage's output and see exactly what it produced.
 
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { writeJson } from "../lib/cache";
+import { probeVideo } from "../lib/ffmpeg";
 import type { VideoMeta } from "../types";
 
 export const VIDEOS_ROOT = path.join("data", "videos");
@@ -30,6 +31,17 @@ export function videoPaths(videoId: string) {
     segmentAudioDir: path.join(dir, "segments"),
     transcript: path.join(dir, "transcript.json"),
     gaps: path.join(dir, "gaps.json"),
+    // 03_context
+    keyframes: path.join(dir, "keyframes.json"),
+    glossary: path.join(dir, "glossary.json"),
+    // 04_detect
+    references: path.join(dir, "references.json"),
+    // 05_localise
+    localised: path.join(dir, "localised.json"),
+    // 06_ground
+    grounding: path.join(dir, "grounding.json"),
+    clipsDir: path.join(dir, "clips"),
+    evidenceDir: path.join(dir, "evidence"),
     // API response cache (delete a file to force a fresh call)
     cacheDir: path.join(dir, "cache"),
   };
@@ -54,4 +66,16 @@ export async function readVideoMeta(videoId: string): Promise<VideoMeta> {
 
 export async function writeVideoMeta(meta: VideoMeta): Promise<void> {
   await writeJson(videoPaths(meta.id).meta, meta);
+}
+
+export async function countFrames(videoId: string): Promise<number> {
+  const files = await readdir(videoPaths(videoId).framesDir);
+  return files.filter((name) => name.endsWith(".jpg")).length;
+}
+
+// The size of the 2 fps frames (and of the grounding clips, which are scaled
+// the same way). SAM's boxes are in these pixels.
+export async function frameSize(videoId: string): Promise<{ width: number; height: number }> {
+  const probed = await probeVideo(videoPaths(videoId).firstFrame);
+  return { width: probed.width, height: probed.height };
 }

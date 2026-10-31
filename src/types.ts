@@ -48,6 +48,25 @@ export interface LocalisedReference {
   refinedTime: Seconds;            // after visual refinement (F4 step 2)
   bestFramePath: string;
   nounPhraseGuess: string;
+  headNoun: string;                // short SAM concept, e.g. "bowl" (added in M0, see DECISIONS.md)
+  alternativeConcepts: string[];   // SAM fallbacks if the first two find nothing (added in M2)
+}
+
+// Stage 03: things named or shown anywhere in the video (F6 context pack).
+export type GlossaryKind = "tool" | "ingredient" | "container" | "part" | "material" | "mixture" | "other";
+
+export interface GlossaryEntry {
+  name: string;                    // the presenter's own name where they use one
+  aliases: string[];
+  kind: GlossaryKind;              // "mixture" names (batter, dry mix) can go stale as the state changes
+  firstSeenSec: Seconds;
+  mentionedInSpeech: boolean;
+}
+
+export interface Keyframe {
+  time: Seconds;
+  framePath: string;
+  reason: "scene_change" | "even_spacing";
 }
 
 export interface MaskEvidence {
