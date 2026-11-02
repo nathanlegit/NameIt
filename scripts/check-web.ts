@@ -143,8 +143,7 @@ async function main(): Promise<void> {
     // 3. Review, keyboard only (local server only).
     if (!IS_LOCAL) {
       console.log("SKIP  review save checks (not a local server)");
-      return;
-    }
+    } else {
     const review = await browser.newPage();
     await review.goto(`${BASE}/review/${VIDEO_ID}`, { waitUntil: "networkidle0" });
     review.on("request", (request) => { if (request.url().includes("/api/review")) console.log(`      (save request: ${request.method()})`); });
@@ -166,6 +165,7 @@ async function main(): Promise<void> {
     const statuses = Object.values(saved.decisions).map((decision) => (decision as { status: string }).status).sort();
     check(JSON.stringify(statuses) === JSON.stringify(["approved", "edited", "rejected"]), `review.json has approved, edited, rejected (got ${statuses.join(", ")})`);
     check(saved.edits.length === 1 && String(saved.edits[0].after).endsWith("Checked by a person."), "edits log has the edit with before/after");
+    }
   } finally {
     await browser.close();
     // Leave no test review behind.
