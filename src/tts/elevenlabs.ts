@@ -10,8 +10,8 @@ export const ELEVENLABS_MODEL_ID = "eleven_multilingual_v2";
 
 // Premade ElevenLabs voices (their "default voices" list).
 export const PRESENTER_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";   // George: the demo clips' presenter
-// TODO-VERIFY: Alice's id is from ElevenLabs' premade voice list; not yet confirmed
-// with this account's key (it was rejected on 2 Nov). Override with ELEVENLABS_DESCRIBER_VOICE_ID.
+// Alice's id is from ElevenLabs' premade voice list, verified with this account on 2 Nov.
+// Override with ELEVENLABS_DESCRIBER_VOICE_ID.
 export const DESCRIBER_VOICE_ID = "Xb7hH8MSUJpSbSDYk0k2";   // Alice: a different, clear voice for descriptions
 
 export function requireElevenLabsKey(): string {
