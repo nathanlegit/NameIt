@@ -157,6 +157,7 @@ async function exportVideo(videoId: string, split: Split): Promise<VideoSummary>
     split,
     syntheticNarration: bundle.syntheticNarration,
     attribution: meta.attribution,
+    thumbUrl: items.find((item) => item.evidence)?.evidence?.frameUrl ?? null,
     references: items.length,
     ready: count("ready"),
     needsReview: count("needs_review"),

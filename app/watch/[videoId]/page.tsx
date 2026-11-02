@@ -18,14 +18,15 @@ export default async function WatchPage({ params }: Params) {
   const bundle = await loadBundle((await params).videoId);
   if (!bundle) notFound();
   return (
-    <>
-      <h1>{bundle.title}</h1>
-      <p className="lede">
-        With audio description of what the presenter points at.{" "}
-        {bundle.syntheticNarration ? "The presenter's narration in this clip is synthetic (ElevenLabs). " : ""}
-        {bundle.attribution}
-      </p>
+    <section>
+      <div className="watch-top">
+        <h1 className="page-title">{bundle.title}</h1>
+        <span className="credit">
+          {/* Scripted clips' attribution already says "narration ElevenLabs". */}
+          {bundle.syntheticNarration ? bundle.attribution : `Original narration. ${bundle.attribution}`}
+        </span>
+      </div>
       <Player bundle={bundle} />
-    </>
+    </section>
   );
 }

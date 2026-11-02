@@ -14,7 +14,11 @@ export function EvidenceView({
 }) {
   const evidence = item.evidence;
   if (!evidence) {
-    return <div className="no-evidence">SAM did not find the object, so there is no segmentation evidence for this item.</div>;
+    return (
+      <div className="no-evidence">
+        <span>SAM did not find the object · no segmentation evidence</span>
+      </div>
+    );
   }
   const { box, maskPath, maskBounds } = evidence;
   const description = `Frame at ${item.refinedTime.toFixed(1)} seconds. Green outline: the object Name It chose.${

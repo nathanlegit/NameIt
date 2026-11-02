@@ -86,6 +86,7 @@ export interface VideoSummary {
   split: Split;
   syntheticNarration: boolean;
   attribution: string;
+  thumbUrl: string | null;     // an evidence frame, for the video list
   references: number;
   ready: number;
   needsReview: number;

@@ -29,6 +29,23 @@ const STATUS_LABEL: Record<ItemStatus, string> = {
 
 const BUCKET_LABEL = { ready: "Ready", needs_review: "Needs review", abstain: "Unsure" } as const;
 
+// Status colours (warm redesign): the dot beside each item and the progress cells.
+const STATUS_COLOUR: Record<ItemStatus, string> = {
+  draft: "var(--draft)",
+  abstained: "var(--red-text)",
+  approved: "var(--green)",
+  edited: "var(--amber)",
+  rejected: "var(--red)",
+};
+const BUCKET_COLOUR = { ready: "var(--green)", needs_review: "var(--amber)", abstain: "var(--red-text)" } as const;
+
+// A draft Name It wasn't confident about is shown as "Check", so it stands out in the list.
+function listStatus(item: BundleItem, status: ItemStatus): { label: string; colour: string } {
+  if (status === "draft" && item.resolution.bucket === "needs_review") return { label: "Check", colour: "var(--amber)" };
+  if (status === "abstained") return { label: "Unsure", colour: STATUS_COLOUR.abstained };
+  return { label: STATUS_LABEL[status], colour: STATUS_COLOUR[status] };
+}
+
 function Sentence({ item }: { item: BundleItem }) {
   const { text, phraseOffset } = item.sentence;
   const matches = text.slice(phraseOffset, phraseOffset + item.phrase.length).toLowerCase() === item.phrase.toLowerCase();
@@ -41,6 +58,11 @@ function Sentence({ item }: { item: BundleItem }) {
       {excerpt.after}
     </span>
   );
+}
+
+function formatClock(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
 }
 
 // Neighbouring turns can be minutes long too: show only the part nearest the item.
@@ -235,49 +257,58 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
     setAnnouncement("Published. The player now uses your reviewed descriptions.");
   }, [persist, review]);
 
-  if (!item) return <p>No visual references were found in this video.</p>;
+  if (!item) return <p className="lede">No visual references were found in this video.</p>;
 
   const status = itemStatus(item, review);
+  const shown = listStatus(item, status);
   const draftForItem = draftText(item);
   const position = `${index + 1} of ${items.length}`;
+  const filledCells = Math.round(item.resolution.confidence * 10);
+  const saveText =
+    saveState === "saving" ? "Saving…" : saveState === "error" ? "Not saved (storage unavailable)" : saveState === "local" ? "Saved in this browser" : "Saved";
 
   return (
-    <>
-      <div className="review-header">
-        <div>
-          <h1>Review: {bundle.title}</h1>
-          <p className="progress">
-            {progress.decided} of {progress.total} reviewed · {progress.approvedUnchanged} approved unchanged · {progress.edited} edited ·{" "}
-            {progress.rejected} rejected ·{" "}
-            <span>
-              {saveState === "saving" ? "Saving…" : saveState === "error" ? "Not saved (storage unavailable)" : saveState === "local" ? "Saved in this browser" : "Saved"}
+    <section>
+      <div className="review-top">
+        <div className="left">
+          <h1 className="page-title">Review: {bundle.title}</h1>
+          <div className="progress-row">
+            <div className="cells" aria-hidden="true">
+              {items.map((cellItem, cellIndex) => {
+                const cellStatus = itemStatus(cellItem, review);
+                const decided = cellStatus !== "draft" && cellStatus !== "abstained";
+                return (
+                  <span
+                    key={cellItem.referenceId}
+                    className={cellIndex === index ? "current" : undefined}
+                    style={decided ? { background: STATUS_COLOUR[cellStatus] } : undefined}
+                  />
+                );
+              })}
+            </div>
+            <span className="progress-text">
+              {progress.decided}/{progress.total} reviewed · {progress.approvedUnchanged} approved · {progress.edited} edited · {progress.rejected} rejected · {saveText}
             </span>
-          </p>
+          </div>
         </div>
         <div className="actions-row">
-          <button type="button" onClick={publish}>{review.publishedAt ? "Published ✓ (publish again)" : "Publish"}</button>
-          <Link className="button primary" href={`/watch/${bundle.id}`}>Watch with descriptions</Link>
+          <button type="button" className="btn" onClick={publish}>{review.publishedAt ? "Published ✓" : "Publish"}</button>
+          <Link className="btn primary" href={`/watch/${bundle.id}`}>Watch with descriptions</Link>
         </div>
       </div>
 
-      {!canSave && (
-        <p className="notice">Demo mode: your decisions are saved in this browser only, and the player on this device uses them.</p>
-      )}
-
-      <div className="review-layout">
-        <nav aria-label="Items to review">
+      <div className="review-grid">
+        <nav aria-label="Items to review" className="item-nav">
+          {!canSave && <p className="notice">Demo mode: decisions are saved in this browser only, and the player on this device uses them.</p>}
           <ol className="item-list">
             {items.map((listItem, listIndex) => {
-              const listStatus = itemStatus(listItem, review);
+              const entry = listStatus(listItem, itemStatus(listItem, review));
               return (
                 <li key={listItem.referenceId}>
                   <button type="button" aria-current={listIndex === index ? "true" : undefined} onClick={() => goTo(listIndex)}>
-                    <span className="time">{listItem.estimatedTime.toFixed(1)} s</span>
+                    <span className="time">{formatClock(listItem.estimatedTime)}</span>
                     <span className="phrase">“{listItem.phrase}”</span>
-                    <span className="chips">
-                      <span className={`chip ${listStatus}`}>{STATUS_LABEL[listStatus]}</span>
-                      {listStatus === "draft" && <span className={`chip ${listItem.resolution.bucket}`}>{BUCKET_LABEL[listItem.resolution.bucket]}</span>}
-                    </span>
+                    <span className="status"><span className="dot" style={{ background: entry.colour }} />{entry.label}</span>
                   </button>
                 </li>
               );
@@ -285,9 +316,13 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
           </ol>
         </nav>
 
-        <section aria-labelledby="evidence-heading">
-          <h2 id="evidence-heading" className="visually-hidden">Evidence</h2>
+        <div className="evidence-col">
+          <h2 className="visually-hidden">Evidence</h2>
           <EvidenceView item={item} frameSize={bundle.frameSize} />
+          <div className="evidence-caption">
+            <p>Frame at {item.refinedTime.toFixed(1)} s · green: the object Name It chose</p>
+            <button type="button" className="btn small" onClick={previewCue} aria-keyshortcuts="P">Hear it <span className="key">P</span></button>
+          </div>
           {item.evidence && (
             <ul className="reasons" aria-label="Why this object was chosen">
               {item.evidence.reasons.map((reason) => <li key={reason}>{reason}</li>)}
@@ -301,6 +336,11 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
             playsInline
             controls
             aria-label={`Video around this moment. Press Space to play the 5 seconds around item ${position}.`}
+            // A seek before the metadata has loaded is ignored, so cue the first item again here.
+            onLoadedMetadata={() => {
+              const video = videoRef.current;
+              if (video && clipEndRef.current === null) video.currentTime = Math.max(0, item.refinedTime - CLIP_HALF_SEC);
+            }}
             onTimeUpdate={() => {
               const video = videoRef.current;
               if (video && clipEndRef.current !== null && video.currentTime >= clipEndRef.current) {
@@ -309,29 +349,30 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
               }
             }}
           />
-        </section>
+        </div>
 
-        <section aria-labelledby="item-heading">
-          <div className="panel">
-            <h2 id="item-heading">
-              Item {position}: “{item.phrase}” <span className={`chip ${status}`}>{STATUS_LABEL[status]}</span>
-            </h2>
+        <div className="detail-col">
+          <div className="detail-block">
+            <div className="detail-head">
+              <h2 className="meta" style={{ margin: 0 }}>Item {position}</h2>
+              <span className="status"><span className="dot" style={{ background: shown.colour }} />{shown.label}</span>
+            </div>
             {item.previousText && <p className="context">{clip(item.previousText, true)}</p>}
             <p className="sentence"><Sentence item={item} /></p>
             {item.nextText && <p className="context">{clip(item.nextText, false)}</p>}
           </div>
 
-          <div className="panel">
-            <h3>What Name It thinks “{item.phrase}” is</h3>
+          <div className="detail-block">
+            <h3>Name It thinks “{item.phrase}” is</h3>
             {item.resolution.bucket === "abstain" || !item.resolution.resolvedText ? (
               <>
                 <p className="resolved">Name It wasn&apos;t sure.</p>
                 {item.resolution.topCandidates.length > 0 && (
                   <>
-                    <p>Its best guesses (choose one to edit it):</p>
+                    <p className="context">Its best guesses (choose one to edit it):</p>
                     <div className="candidates">
                       {item.resolution.topCandidates.map((candidate) => (
-                        <button key={candidate} type="button" onClick={() => startEdit(candidate)}>{candidate}</button>
+                        <button key={candidate} type="button" className="btn small" onClick={() => startEdit(candidate)}>{candidate}</button>
                       ))}
                     </div>
                   </>
@@ -341,62 +382,69 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
               <p className="resolved">{item.resolution.resolvedText}</p>
             )}
             <dl className="facts">
-              <dt>Kind</dt><dd>{item.kind}</dd>
+              <dt>Kind</dt><dd className="mono">{item.kind}</dd>
               <dt>Confidence</dt>
-              <dd>
-                {item.resolution.confidence.toFixed(2)}{" "}
-                <span className={`chip ${item.resolution.bucket}`}>{BUCKET_LABEL[item.resolution.bucket]}</span>
+              <dd className="conf">
+                <span className="conf-cells" aria-hidden="true">
+                  {Array.from({ length: 10 }, (_, cell) => (
+                    <span key={cell} style={cell < filledCells ? { background: BUCKET_COLOUR[item.resolution.bucket] } : undefined} />
+                  ))}
+                </span>
+                <span className="value">{item.resolution.confidence.toFixed(2)}</span>
+                <span className={`bucket bucket-${item.resolution.bucket}`}>{BUCKET_LABEL[item.resolution.bucket]}</span>
               </dd>
               {item.resolution.secondAnswer && item.resolution.secondAnswer !== item.resolution.resolvedText && (
                 <><dt>Second look</dt><dd>{item.resolution.secondAnswer}</dd></>
               )}
-              {item.resolution.usedGlossaryEntry && <><dt>Name used in video</dt><dd>{item.resolution.usedGlossaryEntry}</dd></>}
+              {item.resolution.usedGlossaryEntry && <><dt>Name in video</dt><dd>{item.resolution.usedGlossaryEntry}</dd></>}
               {item.resolution.confidenceNotes.length > 0 && <><dt>Notes</dt><dd>{item.resolution.confidenceNotes.join("; ")}</dd></>}
               {item.resolution.uncertaintyNote && <><dt>Caveat</dt><dd>{item.resolution.uncertaintyNote}</dd></>}
             </dl>
           </div>
 
-          <div className="panel">
-            <h3>Description to speak</h3>
-            {item.cue ? (
-              <p className="context">
-                {item.cue.delivery === "inline"
-                  ? `Inline, spoken in the pause at ${item.cue.start.toFixed(1)} s (${item.cue.placementReason}).`
-                  : `Extended: the video pauses at ${item.cue.start.toFixed(1)} s (${item.cue.placementReason}).`}
-              </p>
-            ) : (
-              <p className="context">No draft. If you write one, the video pauses after the sentence to speak it.</p>
-            )}
-            <label htmlFor="cue-text" className="visually-hidden">Description text</label>
+          <div className="detail-block">
+            <div className="detail-head">
+              <label htmlFor="cue-text" className="cue-label">Description to speak</label>
+              <span className="cue-delivery">
+                {item.cue
+                  ? item.cue.delivery === "inline"
+                    ? `Inline, in the pause at ${item.cue.start.toFixed(1)} s`
+                    : `Extended: video pauses at ${item.cue.start.toFixed(1)} s`
+                  : "No draft: the video will pause after the sentence"}
+              </span>
+            </div>
             <textarea
               id="cue-text"
               ref={textareaRef}
+              className={editing ? "editing" : undefined}
               value={editing ? draft : currentText(item, review)}
               onFocus={() => { if (!editing) startEdit(); }}
               onChange={(event) => { setEditing(true); setDraft(event.target.value); }}
               aria-describedby="cue-help"
             />
-            <p id="cue-help" className="context">
-              {editing ? "Enter saves, Shift+Enter adds a line, Esc cancels." : draftForItem && item.cue?.delivery === "inline" ? "Short version (fits the pause)." : ""}
+            <p id="cue-help" className="hint">
+              {editing
+                ? "Enter saves · Shift+Enter new line · Esc cancels"
+                : item.cue
+                  ? `${item.cue.placementReason}${draftForItem && item.cue.delivery === "inline" ? " · short version, fits the pause" : ""}`
+                  : ""}
             </p>
             <div className="actions-row">
-              <button type="button" className="primary" onClick={editing ? commitEdit : doApprove} aria-keyshortcuts="A">
-                {editing ? "Save" : "Approve"} <kbd>{editing ? "Enter" : "A"}</kbd>
+              <button type="button" className="btn approve" onClick={editing ? commitEdit : doApprove} aria-keyshortcuts="A">
+                {editing ? "Save" : "Approve"} <span className="key">{editing ? "Enter" : "A"}</span>
               </button>
-              <button type="button" onClick={() => startEdit()} aria-keyshortcuts="E">Edit <kbd>E</kbd></button>
-              <button type="button" onClick={doReject} aria-keyshortcuts="R">Reject <kbd>R</kbd></button>
-              <button type="button" onClick={previewCue} aria-keyshortcuts="P">Preview <kbd>P</kbd></button>
-              {status !== "draft" && status !== "abstained" && <button type="button" onClick={doUndo} aria-keyshortcuts="U">Undo <kbd>U</kbd></button>}
+              <button type="button" className="btn" onClick={() => startEdit()} aria-keyshortcuts="E">Edit <span className="key">E</span></button>
+              <button type="button" className="btn danger" onClick={doReject} aria-keyshortcuts="R">Reject <span className="key">R</span></button>
+              {status !== "draft" && status !== "abstained" && (
+                <button type="button" className="btn link" onClick={doUndo} aria-keyshortcuts="U">Undo <span className="key">U</span></button>
+              )}
             </div>
+            <p className="shortcuts">J next · K previous · Space play the 5 s around it · P hear the description</p>
           </div>
-
-          <p className="shortcuts">
-            <kbd>J</kbd> next · <kbd>K</kbd> previous · <kbd>Space</kbd> play the 5 seconds around this moment · <kbd>P</kbd> hear the description
-          </p>
-        </section>
+        </div>
       </div>
 
       <div className="visually-hidden" aria-live="polite" aria-atomic="true">{announcement}</div>
-    </>
+    </section>
   );
 }

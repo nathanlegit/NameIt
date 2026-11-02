@@ -25,6 +25,9 @@ public/demo/
 *.m4a
 *.aiff
 
+# Design hand-offs and other archives (the redesign zip contains frames from third-party footage).
+*.zip
+
 # Dependencies and build output
 node_modules/
 .next/
