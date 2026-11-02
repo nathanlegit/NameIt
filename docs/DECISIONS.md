@@ -41,7 +41,7 @@ Dead code and leftovers removed, no behaviour change to the pipeline:
 - **Config:**
   - `@types/node` ^24 to match `engines.node` 24.x
   - `packageManager: pnpm@12.16.1`
-  - tsconfig: `allowJs` dropped, `next.config.ts` checked
+  - tsconfig: `next.config.ts` is now type-checked (`allowJs` stays: Next.js re-adds it on every build)
   - `.env.example` lists every variable the code reads
   - `.vercelignore` reworded as a safety net, since deploys are prebuilt
   - `PRD.md` moved to `docs/PRD.md`
