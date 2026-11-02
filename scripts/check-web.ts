@@ -26,7 +26,8 @@ function check(condition: boolean, message: string): void {
   if (!condition) failures++;
 }
 
-// Replaces window.speechSynthesis with a recorder; each utterance "speaks" for 600 ms.
+// Replaces window.speechSynthesis (and description <audio> playback) with a
+// recorder; each cue "speaks" for 600 ms.
 const FAKE_SPEECH = `
   window.__spoken = [];
   const fake = {
@@ -41,12 +42,24 @@ const FAKE_SPEECH = `
     },
     speak(utterance) {
       const video = document.querySelector("video");
-      window.__spoken.push({ text: utterance.text, time: video.currentTime, volume: video.volume, paused: video.paused });
+      window.__spoken.push({ text: utterance.text, time: video.currentTime, volume: video.volume, paused: video.paused, via: "browser voice" });
       this._current = utterance;
       this._timer = setTimeout(() => { this._current = null; if (utterance.onend) utterance.onend({}); }, 600);
     },
   };
   Object.defineProperty(window, "speechSynthesis", { value: fake });
+  // Pre-rendered description audio (F11b) plays through an <audio> element: record it the same way.
+  const realPlay = HTMLMediaElement.prototype.play;
+  HTMLMediaElement.prototype.play = function () {
+    if (!(this instanceof HTMLAudioElement)) return realPlay.call(this);
+    if (this.dataset.cueText) {
+      const video = document.querySelector("video");
+      window.__spoken.push({ text: this.dataset.cueText, time: video.currentTime, volume: video.volume, paused: video.paused, via: "recorded audio" });
+      const audio = this;
+      setTimeout(() => audio.onended && audio.onended(new Event("ended")), 600);
+    }
+    return Promise.resolve();
+  };
   window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text; } };
 `;
 
@@ -103,13 +116,13 @@ async function main(): Promise<void> {
 
     await player.keyboard.press("Space"); // on the focused Play button
     await player.waitForFunction((until) => (document.querySelector("video") as HTMLVideoElement).currentTime > until, { timeout: 30_000 }, playUntil);
-    const spoken = await player.evaluate(() => (window as unknown as { __spoken: Array<{ text: string; time: number; volume: number; paused: boolean }> }).__spoken);
+    const spoken = await player.evaluate(() => (window as unknown as { __spoken: Array<{ text: string; time: number; volume: number; paused: boolean; via: string }> }).__spoken);
 
     check(spoken.length >= firstThree.length, `spoke ${spoken.length} cues by ${playUntil.toFixed(1)} s (expected ${firstThree.length})`);
     firstThree.forEach((cue: { start: number; delivery: string; text: string }, index: number) => {
       const said = spoken[index];
       if (!said) return;
-      check(said.text === cue.text, `cue ${index + 1} text: "${said.text}"`);
+      check(said.text === cue.text, `cue ${index + 1} text (${said.via}): "${said.text}"`);
       check(Math.abs(said.time - cue.start) < 0.25, `cue ${index + 1} fired at ${said.time.toFixed(2)} s (planned ${cue.start.toFixed(2)} s)`);
       if (cue.delivery === "extended") check(said.paused, `cue ${index + 1} is extended: video paused while speaking`);
       else check(!said.paused && Math.abs(said.volume - 0.3) < 0.01, `cue ${index + 1} is inline: video playing, ducked to ${said.volume}`);

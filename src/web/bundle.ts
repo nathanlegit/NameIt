@@ -77,6 +77,7 @@ export interface VideoBundle {
   turns: Array<{ start: Seconds; end: Seconds; text: string }>;
   items: BundleItem[];
   review: ReviewState;
+  cueAudio: Record<string, string>; // cueAudioKey(text) -> MP3 URL (F11b); empty if not rendered
 }
 
 export interface VideoSummary {

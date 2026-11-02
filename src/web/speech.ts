@@ -69,6 +69,76 @@ export function speak(text: string, rate: number, onDone: () => void): SpeechHan
   };
 }
 
+// ---------------------------------------------------------------------------
+// F11b: pre-rendered ElevenLabs audio, played through one shared <audio>.
+// Safari only lets a page play audio it started from a user gesture, so the
+// first Play press "unlocks" this element (playing a silent clip) and every
+// cue afterwards reuses it.
+// ---------------------------------------------------------------------------
+
+const SILENT_WAV = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+let sharedAudio: HTMLAudioElement | null = null;
+
+function audioElement(): HTMLAudioElement {
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
+    sharedAudio.preload = "auto";
+  }
+  return sharedAudio;
+}
+
+// Call from a click or key handler (the Play button).
+export function unlockAudio(): void {
+  if (typeof window === "undefined") return;
+  const audio = audioElement();
+  if (audio.dataset.unlocked) return;
+  audio.dataset.unlocked = "true";
+  audio.src = SILENT_WAV;
+  audio.play().catch(() => {});
+}
+
+// Plays the recorded description if there is one, otherwise speaks it with the
+// browser voice. A recording that fails to load falls back to the browser voice too.
+export function speakCue(text: string, audioUrl: string | null, rate: number, onDone: () => void): SpeechHandle {
+  if (!audioUrl) return speak(text, rate, onDone);
+
+  const audio = audioElement();
+  let finished = false;
+  let fallback: SpeechHandle | null = null;
+  const cleanUp = () => {
+    audio.onended = null;
+    audio.onerror = null;
+  };
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    cleanUp();
+    onDone();
+  };
+  const useBrowserVoice = () => {
+    if (finished) return;
+    cleanUp();
+    fallback = speak(text, rate, finish);
+  };
+
+  audio.onended = finish;
+  audio.onerror = useBrowserVoice;
+  audio.dataset.cueText = text; // for debugging and the browser checks
+  audio.src = audioUrl;
+  audio.playbackRate = rate;
+  audio.preservesPitch = true;
+  audio.play().catch(useBrowserVoice);
+
+  return {
+    cancel: () => {
+      finished = true;
+      cleanUp();
+      audio.pause();
+      fallback?.cancel();
+    },
+  };
+}
+
 // Silent stand-in when the built-in voice is off (screen reader users): wait
 // roughly as long as the words would take, so extended pauses still happen.
 export function waitForReading(text: string, rate: number, onDone: () => void): SpeechHandle {

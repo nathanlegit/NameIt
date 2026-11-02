@@ -18,7 +18,8 @@
     "build": "next build",
     "start": "next start",
     "check-web": "tsx scripts/check-web.ts",
-    "deploy-demo": "bash scripts/deploy.sh"
+    "deploy-demo": "bash scripts/deploy.sh",
+    "render-cue-audio": "tsx scripts/render-cue-audio.ts"
   },
   "dependencies": {
     "@meta-sam/parser": "^0.1.0",

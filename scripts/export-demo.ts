@@ -2,6 +2,7 @@
 //   video.mp4         720p H.264 copy (never committed: public/demo is gitignored)
 //   bundle.json       everything the review UI and player need (src/web/bundle.ts)
 //   evidence/*.jpg    the SAM frame and the box overlay per reference
+//   cue-audio/*.mp3   ElevenLabs description audio, if rendered (pnpm render-cue-audio)
 // plus public/demo/index.json (the video list) and public/demo/eval.json (latest eval).
 //
 // Usage: pnpm export-demo [videoId ...]   (default: every video in the eval test set)
@@ -16,6 +17,8 @@ import { TEST_SET } from "../src/eval/testSet";
 import type { GroundingRecord, MaskFile } from "../src/pipeline/06_ground";
 import { frameSize, readVideoMeta, videoPaths } from "../src/pipeline/store";
 import type { Cue, LocalisedReference, ReferenceCandidate, Resolution, Turn } from "../src/types";
+import { cueAudioKey } from "../src/web/cueAudio";
+import { cueAudioDir, speakableTexts } from "./render-cue-audio";
 import { EMPTY_REVIEW, type BundleItem, type ReviewState, type Split, type VideoBundle, type VideoSummary } from "../src/web/bundle";
 
 const DEMO_ROOT = path.join("public", "demo");
@@ -133,6 +136,21 @@ async function exportVideo(videoId: string, split: Split): Promise<VideoSummary>
   }
   items.sort((first, second) => first.estimatedTime - second.estimatedTime);
 
+  // F11b: pre-rendered description audio, for every speakable text that has a file.
+  const cueAudio: Record<string, string> = {};
+  const audioSourceDir = cueAudioDir(videoId);
+  if (existsSync(audioSourceDir)) {
+    const audioOut = path.join(outputDir, "cue-audio");
+    await mkdir(audioOut, { recursive: true });
+    for (const text of await speakableTexts(videoId)) {
+      const key = cueAudioKey(text);
+      const source = path.join(audioSourceDir, `${key}.mp3`);
+      if (!existsSync(source)) continue;
+      await copyFile(source, path.join(audioOut, `${key}.mp3`));
+      cueAudio[key] = `${urlBase}/cue-audio/${key}.mp3`;
+    }
+  }
+
   const bundle: VideoBundle = {
     id: videoId,
     title: meta.title,
@@ -146,6 +164,7 @@ async function exportVideo(videoId: string, split: Split): Promise<VideoSummary>
     turns: turns.map((turn) => ({ start: turn.start, end: turn.end, text: turn.text })),
     items,
     review: await readReviewState(videoId),
+    cueAudio,
   };
   await writeJson(path.join(outputDir, "bundle.json"), bundle);
 

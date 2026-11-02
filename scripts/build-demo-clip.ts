@@ -21,6 +21,7 @@ import { createHash } from "node:crypto";
 
 import { loadLocalEnv } from "../src/meta/client";
 import { probeVideo } from "../src/lib/ffmpeg";
+import { PRESENTER_VOICE_ID, requireElevenLabsKey, synthesise } from "../src/tts/elevenlabs";
 
 interface ClipSpec {
   name: string;
@@ -31,9 +32,6 @@ interface ClipSpec {
 const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
 const OUTPUT_FPS = 25;
-// George, one of ElevenLabs' default voices (used in their own quickstart).
-const DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb";
-const TTS_MODEL_ID = "eleven_multilingual_v2";
 // Pexels serves files to a normal browser user agent; the download URL redirects
 // to videos.pexels.com.
 const BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36";
@@ -85,23 +83,6 @@ async function joinSources(sourcePaths: string[], outputPath: string): Promise<v
   ]);
 }
 
-// ElevenLabs text-to-speech: POST /v1/text-to-speech/{voice_id}, key in the
-// xi-api-key header, JSON body {text, model_id}, MP3 bytes back.
-async function synthesiseLine(text: string, voiceId: string, apiKey: string): Promise<Buffer> {
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
-    {
-      method: "POST",
-      headers: { "xi-api-key": apiKey, "Content-Type": "application/json", Accept: "audio/mpeg" },
-      body: JSON.stringify({ text, model_id: TTS_MODEL_ID }),
-    },
-  );
-  if (!response.ok) {
-    throw new Error(`ElevenLabs returned HTTP ${response.status}: ${(await response.text()).slice(0, 400)}`);
-  }
-  return Buffer.from(await response.arrayBuffer());
-}
-
 interface PlacedLine {
   start: number;
   text: string;
@@ -110,11 +91,8 @@ interface PlacedLine {
 }
 
 async function generateLines(spec: ClipSpec, linesDir: string): Promise<PlacedLine[]> {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) {
-    throw new Error("ELEVENLABS_API_KEY is not set. Add it to .env.local, then re-run.");
-  }
-  const voiceId = process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
+  const apiKey = requireElevenLabsKey();
+  const voiceId = process.env.ELEVENLABS_VOICE_ID || PRESENTER_VOICE_ID;
   await mkdir(linesDir, { recursive: true });
 
   const placed: PlacedLine[] = [];
@@ -124,7 +102,7 @@ async function generateLines(spec: ClipSpec, linesDir: string): Promise<PlacedLi
     const audioPath = path.join(linesDir, `line-${String(index).padStart(2, "0")}-${contentHash}.mp3`);
     if (!existsSync(audioPath)) {
       console.log(`  TTS ${index}: "${line.text}"`);
-      await writeFile(audioPath, await synthesiseLine(line.text, voiceId, apiKey));
+      await writeFile(audioPath, await synthesise(line.text, voiceId, apiKey));
     }
     const { durationSec } = await probeAudioDuration(audioPath);
     placed.push({ start: line.start, text: line.text, audioPath, durationSec });

@@ -13,7 +13,8 @@ import type { BundleItem, ReviewState, VideoBundle } from "@/src/web/bundle";
 import { loadLocalReview, saveLocalReview } from "@/src/web/localReview";
 import { draftText } from "@/src/web/playback";
 import { approve, currentText, itemStatus, reject, reviewProgress, saveEdit, undoDecision, type ItemStatus } from "@/src/web/review";
-import { speak, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
+import { cueAudioKey } from "@/src/web/cueAudio";
+import { speakCue, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
 import { excerptAround } from "@/src/web/text";
 import { EvidenceView } from "../../components/EvidenceView";
 
@@ -220,8 +221,10 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
       setAnnouncement("No description to preview.");
       return;
     }
-    previewRef.current = speak(text, 1.1, () => { previewRef.current = null; });
-  }, [draft, editing, item, review]);
+    // The ElevenLabs recording if this exact text was rendered, else the browser voice.
+    const audioUrl = bundle.cueAudio?.[cueAudioKey(text)] ?? null;
+    previewRef.current = speakCue(text, audioUrl, 1.1, () => { previewRef.current = null; });
+  }, [bundle.cueAudio, draft, editing, item, review]);
 
   // Keyboard shortcuts (not while typing in the editor).
   useEffect(() => {

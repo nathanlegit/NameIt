@@ -24,7 +24,8 @@ import {
   type PlaybackMode,
   type PlayableCue,
 } from "@/src/web/playback";
-import { speak, waitForReading, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
+import { cueAudioKey } from "@/src/web/cueAudio";
+import { speakCue, unlockAudio, waitForReading, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
 import { excerptAround } from "@/src/web/text";
 
 const DUCKED_VOLUME = 0.3;
@@ -103,6 +104,9 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     restoreVolume();
   }, []);
 
+  // F11b: the ElevenLabs recording of this exact text, if one was rendered.
+  const audioUrlFor = useCallback((text: string) => bundle.cueAudio?.[cueAudioKey(text)] ?? null, [bundle.cueAudio]);
+
   // finishCue and startCue call each other; the ref breaks the cycle.
   const startCueRef = useRef<(cue: PlayableCue) => void>(() => {});
 
@@ -139,9 +143,9 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
       holdAtRef.current = nextSpeechStart(bundle.turns, cue.start);
     }
     speakingRef.current = voiceOnRef.current
-      ? speak(cue.text, rateRef.current, finishCue)
+      ? speakCue(cue.text, audioUrlFor(cue.text), rateRef.current, finishCue)
       : waitForReading(cue.text, rateRef.current, finishCue);
-  }, [bundle.turns, finishCue]);
+  }, [audioUrlFor, bundle.turns, finishCue]);
   useEffect(() => { startCueRef.current = startCue; }, [startCue]);
 
   // The scheduler loop.
@@ -188,6 +192,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
       video.pause();
       setPlaying(false);
     } else {
+      unlockAudio(); // Safari: description audio may only start after a user gesture
       void video.play();
     }
   }, [stopDescription]);
@@ -220,8 +225,10 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     }
     setActiveCue(null);
     window.setTimeout(() => setActiveCue(cue), 50); // re-announce even if the text is unchanged
-    speakingRef.current = voiceOnRef.current ? speak(cue.text, rateRef.current, finishCue) : waitForReading(cue.text, rateRef.current, finishCue);
-  }, [finishCue, stopDescription]);
+    speakingRef.current = voiceOnRef.current
+      ? speakCue(cue.text, audioUrlFor(cue.text), rateRef.current, finishCue)
+      : waitForReading(cue.text, rateRef.current, finishCue);
+  }, [audioUrlFor, finishCue, stopDescription]);
 
   const changeRate = useCallback((direction: 1 | -1) => {
     setRate((current) => {

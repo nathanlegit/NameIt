@@ -21,6 +21,16 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 2 Nov 2026: F11b (ElevenLabs description voice) and the warm redesign
+
+- **Description audio is pre-rendered per text, not per cue.** `pnpm render-cue-audio` renders every text the player could speak (each cue's draft, and every reviewer's final text) to `data/videos/<id>/cue-audio/<voice>/<key>.mp3`, where the key is an FNV-1a hash of the normalised text (`src/web/cueAudio.ts`). The player looks up the same key. An edited description therefore has no file and falls back to the browser voice, never to stale audio, and a re-render only pays for new text.
+- **A separate voice for descriptions:** Alice (premade) for descriptions, George for the demo clips' presenter. Viewers can tell the presenter from the describer. The voice id is TODO-VERIFY: on 2 Nov the ElevenLabs key in `.env.local` was rejected (401 "Invalid API key", including for speech that worked on 31 Oct), so nothing has been rendered yet. Override with `ELEVENLABS_DESCRIBER_VOICE_ID`.
+- **Safari:** audio may only start from a user gesture, so the player plays a silent clip through one shared `<audio>` element on the first Play press and reuses that element for every cue.
+- **Tested without the key:** stand-in MP3s from macOS `say` (`spike/fake-cue-audio.ts`, in a separate `test-say` voice folder, deleted afterwards) went through export, build and the browser check; all three checked cues played via the recorded-audio path.
+- **ElevenLabs code now lives only in `src/tts/elevenlabs.ts`** (PRD 10.3); the clip builder uses it too.
+- **Warm redesign** applied from the v2 design hand-off. Departures, for accessibility: a real `<input type=range>` styled as the design's seek bar (the mockup's was a clickable div); visible text kept in every accessible name (axe flagged "− 5 s" and others); a darker grey than the design's `#8a7a66`, which was 3.6:1 on the cream background; fonts self-hosted via `next/font`; light theme only, as designed. The eval page highlights a winner only when the rounded percentages differ, and never for the abstention range (it had highlighted 16% vs 16%).
+- **Build note:** Turbopack failed twice with "ModuleGraph::from_graphs_inner was canceled". Deleting `.next/` (its on-disk cache) fixed it.
+
 ## 2 Nov 2026: M4 (review UI, accessible player, eval page)
 
 Built: `/` video list, `/review/[videoId]` (F10), `/watch/[videoId]` (F11), `/eval` (PRD 13.4), `POST /api/review/[videoId]`. Checked by `pnpm check-web`, which runs real Chrome with axe-core (WCAG 2.1 A/AA, light and dark: 0 violations on all four page types) and drives the player and review UI by keyboard.
