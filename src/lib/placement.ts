@@ -23,6 +23,12 @@ export const WORDS_PER_SECOND = 2.5;   // at speechRate 1
 export const CUE_LEAD_IN_SEC = 0.15;   // silence after the presenter stops, before a cue
 export const CUE_TAIL_SEC = 0.15;      // silence after a cue, before the presenter starts
 export const GAP_SEARCH_SEC = 3;
+// An extended cue pauses at the end of its sentence, unless the "sentence" is a
+// long run of speech with no pause (a presenter who never stops: held-meat had a
+// 141 s turn, and 11 descriptions all fired at its end). Then it pauses shortly
+// after the word instead, interrupting the presenter, as extended description does.
+export const LONG_TURN_SEC = 8;
+export const EXTENDED_PAUSE_AFTER_WORD_SEC = 1.5;
 const ADJACENT_TOLERANCE_SEC = 0.05; // gap and sentence edges are rounded differently
 
 // Hyphenated parts count separately: TTS speaks "center-hole" as two words.
@@ -86,6 +92,14 @@ function roundToMs(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
+// Where an extended cue pauses the video: the end of its sentence, or shortly
+// after the word in a very long turn.
+export function extendedPauseTime(request: CueRequest): Seconds {
+  const { start, end } = request.sentence;
+  if (end - start <= LONG_TURN_SEC) return end;
+  return Math.min(end, Math.max(start, request.referenceTime + EXTENDED_PAUSE_AFTER_WORD_SEC));
+}
+
 export function placeCues(requests: CueRequest[], gaps: Gap[], speechRate = 1): PlacedCue[] {
   // Earliest free time in each gap, keyed by gap start.
   const nextFreeInGap = new Map<number, Seconds>();
@@ -119,15 +133,18 @@ export function placeCues(requests: CueRequest[], gaps: Gap[], speechRate = 1): 
         : `${wordCount(request.shortText)} words don't fit the ${gap.durationSec.toFixed(1)} s gap (budget ${budgetWords(gap.durationSec, speechRate)})`;
     }
 
+    const pauseAt = extendedPauseTime(request);
     placed.push({
       id: request.id,
       delivery: "extended",
-      start: roundToMs(request.sentence.end),
-      end: roundToMs(request.sentence.end),
+      start: roundToMs(pauseAt),
+      end: roundToMs(pauseAt),
       text: request.longText,
       spokenDurationSec: roundToMs(speechDurationSec(request.longText, speechRate)),
       gap: null,
-      reason: `${inlineReason}: pause the video after the sentence`,
+      reason: pauseAt < request.sentence.end
+        ? `${inlineReason}: long run of speech, pause the video just after the word`
+        : `${inlineReason}: pause the video after the sentence`,
     });
   }
 

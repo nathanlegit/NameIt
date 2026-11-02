@@ -1,6 +1,6 @@
 # Name It evaluation
 
-Generated 2026-11-01T23:33:45.499Z by `pnpm eval`. Method: PRD Section 13. Raw data: `data/eval/latest.json`.
+Generated 2026-11-02T22:49:41.802Z by `pnpm eval`. Method: PRD Section 13. Raw data: `data/eval/latest.json`.
 
 - **Scripted** clips use stock footage with our own narration and were used for tuning, so they flatter the system. **Held-out** clips have real narration and were never used for tuning: those are the honest numbers.
 - **Baseline:** Spark sees the same frames and the sentence, and names the referent in one call: no SAM, no glossary, no transcript, no second answer. It uses Name It's detector, so detection numbers are shared.

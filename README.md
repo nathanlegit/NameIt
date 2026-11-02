@@ -134,7 +134,7 @@ The demo videos can't go in git (no third-party video in the repo), so a GitHub-
 
 - **No blind or low-vision users have tested it yet.** It follows published guidelines (the DCMP Description Key) and research on what BLV viewers want, but that's not the same thing.
 - **Small test set.** 83 references, 37 of them held-out. The gap over the baseline is real but not precise.
-- **Presenters who never pause.** If someone talks for two minutes without a break, the timing gets rough and descriptions bunch up at the end of the long turn.
+- **Presenters who never pause.** If someone talks for two minutes without a break, there are no gaps to speak in, so every description pauses the video (just after the word it explains), and the moment it picks is a rougher guess.
 - **How-to videos only, English only.**
 - **The judge is a model.** Muse Spark grades the answers against my labels, the same for both systems. I spot-check it, and corrections go in `src/eval/overrides.json`.
 

@@ -21,6 +21,14 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 2 Nov 2026: extended cues in very long turns
+
+**Problem (seen while taking README screenshots of held-meat):** an extended cue paused the video at the end of its sentence. With a presenter who barely pauses, the "sentence" was a 141 s turn, so 11 descriptions all fired together at 2:21 and 8 more at the very end, up to two minutes after the word they explain.
+
+**Fix (stage 09, `extendedPauseTime` in `src/lib/placement.ts`):** in a turn longer than 8 s, an extended cue pauses 1.5 s after the word instead (never past the turn's end). Normal sentences still pause at their end, which reads better. Result on held-meat: 25 distinct pause points for 26 cues (most at one moment: 2), median delay from word to description 1.5 s, maximum 2.7 s.
+
+**Held-out note:** this was motivated by a held-out film, but it changes only *when* a cue plays, not *what* Name It says or how it is judged. Resolution accuracy, hallucination and ready precision are unchanged (75% / 22% / 78%); cue timing fit stays 100%. Recorded here so the change is visible.
+
 ## 2 Nov 2026: F11b (ElevenLabs description voice) and the warm redesign
 
 - **Description audio is pre-rendered per text, not per cue.** `pnpm render-cue-audio` renders every text the player could speak (each cue's draft, and every reviewer's final text) to `data/videos/<id>/cue-audio/<voice>/<key>.mp3`, where the key is an FNV-1a hash of the normalised text (`src/web/cueAudio.ts`). The player looks up the same key. An edited description therefore has no file and falls back to the browser voice, never to stale audio, and a re-render only pays for new text.

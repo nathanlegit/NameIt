@@ -102,6 +102,22 @@ describe("placeCues", () => {
     expect(cues[1]).toMatchObject({ delivery: "inline" });
   });
 
+  it("pauses just after the word, not at the end, in a very long turn (held-meat regression)", () => {
+    // One 141 s turn with references at 20 s and 90 s: they must not both wait until 141 s.
+    const cues = placeCues(
+      [request("early", 20, [0, 141], "Roast."), request("late", 90, [0, 141], "Grade stamp.")],
+      [gap(141, 143)],
+    );
+    expect(cues.map((cue) => [cue.id, cue.delivery, cue.start])).toEqual([["early", "extended", 21.5], ["late", "extended", 91.5]]);
+    expect(cues[0]!.reason).toContain("just after the word");
+    expect(findOverlaps(cues)).toEqual([]);
+  });
+
+  it("still pauses at the end of a normal-length sentence", () => {
+    const [cue] = placeCues([request("a", 2, [1, 6], "Flour.")], []);
+    expect(cue).toMatchObject({ delivery: "extended", start: 6 });
+  });
+
   it("lets two cues share a long gap, in spoken order", () => {
     const cues = placeCues([request("b", 1.5, [0, 2], "The bowl."), request("a", 1, [0, 2], "Flour.")], [gap(2, 5)]);
     expect(cues.map((cue) => [cue.id, cue.delivery])).toEqual([["a", "inline"], ["b", "inline"]]);
