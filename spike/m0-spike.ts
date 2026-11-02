@@ -365,6 +365,8 @@ async function resolve(
           sentence: turn.text,
           phrase: match.phrase,
           kind,
+          view: hasEvidence ? "frame_and_overlay" : "frame_only",
+          sequenceTimes: null,
           selectionReasons: hasEvidence ? grounding.chosenReasons : null,
         }),
         imagePaths: hasEvidence ? [bestFramePath, grounding.overlayPath] : [bestFramePath],

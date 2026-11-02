@@ -1,0 +1,127 @@
+[
+  {
+    "videoId": "clip4",
+    "time": 0.3,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the green drill bit case",
+    "acceptableAlternatives": [
+      "the bit set",
+      "the green toolbox of bits"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 4,
+    "phrase": "right here",
+    "isVisual": true,
+    "trueReferent": "the row of small bits in the case where the fingers are",
+    "acceptableAlternatives": [
+      "a slot in the bit case"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 8.6,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the strip of screwdriver bits pulled from the case",
+    "acceptableAlternatives": [
+      "the bit holder",
+      "the screwdriver bits"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 12,
+    "phrase": "This",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the step of choosing)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip4",
+    "time": 16.5,
+    "phrase": "this one",
+    "isVisual": true,
+    "trueReferent": "a single screwdriver bit taken off the strip",
+    "acceptableAlternatives": [
+      "one bit"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 23.9,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the chuck of the green cordless drill",
+    "acceptableAlternatives": [
+      "the cordless drill",
+      "the drill"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 26,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "twisting the drill's chuck by hand to lock the bit in",
+    "acceptableAlternatives": [
+      "turning the chuck"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 31.5,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to fitting the bit)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip4",
+    "time": 36,
+    "phrase": "right here",
+    "isVisual": true,
+    "trueReferent": "the screw standing in the pale wooden plank next to the gloved hand",
+    "acceptableAlternatives": [
+      "the spot on the plank by the glove"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 39.4,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "a gloved hand pressing the plank flat",
+    "acceptableAlternatives": [
+      "holding the plank steady with a gloved hand"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 43.4,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "the drill driving the screw down into the plank",
+    "acceptableAlternatives": [
+      "screwing into the wood with the drill"
+    ]
+  },
+  {
+    "videoId": "clip4",
+    "time": 51,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the process)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip4",
+    "time": 51,
+    "phrase": "there",
+    "isVisual": false,
+    "trueReferent": "(not visual: existential 'there is')",
+    "acceptableAlternatives": []
+  }
+]

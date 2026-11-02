@@ -87,6 +87,10 @@ export interface Resolution {
   bucket: "ready" | "needs_review" | "abstain";
   topCandidates: string[];         // shown to reviewer when abstained
   evidence: MaskEvidence | null;
+  // Added in M3 (see DECISIONS.md): what the confidence is made of, for the review UI.
+  secondAnswer: string | null;     // the self-consistency answer
+  uncertaintyNote: string | null;  // Spark's own caveat
+  confidenceNotes: string[];       // e.g. ["the two answers disagree"]
 }
 
 export interface OnScreenText {
@@ -100,12 +104,17 @@ export interface Cue {
   id: string;
   sourceType: "reference" | "onscreen_text";
   sourceId: string;
-  start: Seconds;
+  start: Seconds;                  // extended: the video pauses here
   shortText: string;
   longText: string;
   delivery: "inline" | "extended";
   reviewStatus: "draft" | "approved" | "edited" | "rejected";
   finalText: string | null;
+  // Added in M3 (see DECISIONS.md):
+  end: Seconds;                    // inline: when speech ends; extended: same as start
+  spokenDurationSec: Seconds;
+  placementReason: string;         // e.g. "fits the 2.2 s gap at 5.9 s"
+  bucket: Resolution["bucket"];    // the player's "auto" mode speaks ready cues unreviewed
 }
 
 export interface ReviewEdit {

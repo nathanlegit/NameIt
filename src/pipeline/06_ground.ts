@@ -11,8 +11,8 @@
 //
 // SAM's raw output text is cached per clip and concept, and re-parsed offline.
 //
-// Outputs: grounding.json (GroundingRecord[]), evidence/<id>.jpg,
-// evidence/<id>.mask.json, clips/<id>.mp4
+// Outputs: grounding.json (GroundingRecord[]), evidence/<id>.jpg (overlay),
+// evidence/<id>.frame.jpg (the clip frame SAM boxed), evidence/<id>.mask.json, clips/<id>.mp4
 
 import { existsSync } from "node:fs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -20,7 +20,7 @@ import path from "node:path";
 import { decodeMaskToRLE, type RLEObject } from "@meta-sam/parser";
 import { readJson, writeJson } from "../lib/cache";
 import { mapWithConcurrency } from "../lib/concurrency";
-import { cutVideoClip, drawBoxesOnImage, GROUNDING_CLIP_FPS, type BoxToDraw } from "../lib/ffmpeg";
+import { cutVideoClip, drawBoxesOnImage, extractClipFrame, GROUNDING_CLIP_FPS, type BoxToDraw } from "../lib/ffmpeg";
 import { selectReferent, type TrackFeatures } from "../lib/maskSelection";
 import { parseVideoRawOutput, segmentVideoRaw, toTracks, type ObjectTrack, type PixelBox } from "../meta/sam";
 import type { LocalisedReference, MaskEvidence, ReferenceCandidate, ReferenceKind } from "../types";
@@ -49,6 +49,7 @@ export interface GroundingRecord {
   kind: ReferenceKind;
   clip: { path: string; startSec: number; fps: number; frameCount: number };
   bestFrameIndex: number;           // within the clip
+  samFramePath: string;             // that clip frame as a JPEG; evidence is drawn on it
   concepts: { specific: string | null; headNoun: string; fallbacksTried: string[] };
   trackCounts: { specific: number; headNoun: number; hand: number }; // headNoun counts the fallback if one was used
   usedSpecificPhrase: boolean;
@@ -175,7 +176,10 @@ export const groundStage: Stage = {
         kind,
       });
 
-      // 4. Evidence: overlay (green = chosen, yellow = hands, red = other candidates) and mask.
+      // 4. Evidence: overlay (green = chosen, yellow = hands, red = other candidates) and mask,
+      // drawn on the exact clip frame SAM boxed (not the nearest 2 fps frame: see DECISIONS.md).
+      const samFramePath = path.join(paths.evidenceDir, `${localised.referenceId}.frame.jpg`);
+      await extractClipFrame(clipPath, bestFrameIndex, samFramePath);
       const overlayPath = path.join(paths.evidenceDir, `${localised.referenceId}.jpg`);
       const handBoxes = hands.tracks
         .map((track) => track.boxes.find((trackedBox) => trackedBox.frameIndex === bestFrameIndex))
@@ -185,7 +189,7 @@ export const groundStage: Stage = {
         ...handBoxes.map((handBox) => ({ box: handBox.box, colour: "yellow", thickness: 3 })),
         ...(selection.chosen ? [{ box: selection.chosen.boxAtBestFrame.box, colour: "lime", thickness: 6 }] : []),
       ];
-      await drawBoxesOnImage(localised.bestFramePath, overlayPath, boxesToDraw);
+      await drawBoxesOnImage(samFramePath, overlayPath, boxesToDraw);
 
       let evidence: MaskEvidence | null = null;
       if (selection.chosen) {
@@ -194,7 +198,7 @@ export const groundStage: Stage = {
         if (chosenBox.mask) {
           const maskFile: MaskFile = {
             referenceId: localised.referenceId,
-            framePath: localised.bestFramePath,
+            framePath: samFramePath,
             bounds: chosenBox.box,
             rle: decodeMaskToRLE(chosenBox.mask),
           };
@@ -215,6 +219,7 @@ export const groundStage: Stage = {
         kind,
         clip: { path: clipPath, startSec: clipStart, fps: GROUNDING_CLIP_FPS, frameCount },
         bestFrameIndex,
+        samFramePath,
         concepts: { specific: specificConcept, headNoun, fallbacksTried: fallbackConceptsTried },
         trackCounts: { specific: specific?.tracks.length ?? 0, headNoun: headNounTracks.length, hand: hands.tracks.length },
         usedSpecificPhrase: selection.usedSpecificPhrase,

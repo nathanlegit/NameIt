@@ -1,0 +1,53 @@
+{
+  "name": "clip4",
+  "description": "DIY/assembly clip: choosing a screwdriver bit from a green bit case, fitting it into a cordless drill, then driving a screw into a wooden plank. Three Pexels clips joined, ElevenLabs narration placed at the moments the actions happen.",
+  "sources": [
+    {
+      "pexelsId": 6957870,
+      "pageUrl": "https://www.pexels.com/video/a-person-getting-drill-bits-from-a-toolbox-6957870/",
+      "creator": "kaboompics.com (https://www.pexels.com/@karola-g/)",
+      "licence": "Pexels License"
+    },
+    {
+      "pexelsId": 6957872,
+      "pageUrl": "https://www.pexels.com/video/a-person-loading-an-electric-drill-6957872/",
+      "creator": "kaboompics.com (https://www.pexels.com/@karola-g/)",
+      "licence": "Pexels License"
+    },
+    {
+      "pexelsId": 8829710,
+      "pageUrl": "https://www.pexels.com/video/a-person-putting-screw-in-the-wood-8829710/",
+      "creator": "Ron Lach",
+      "licence": "Pexels License"
+    }
+  ],
+  "lines": [
+    { "start": 0.3, "text": "Okay, all the bits live in this.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the green drill bit case", "alternatives": ["the bit set", "the green toolbox of bits"] }] },
+    { "start": 4.0, "text": "You want one from right here.",
+      "expected": [{ "phrase": "right here", "isVisual": true, "kind": "location", "referent": "the row of small bits in the case where the fingers are", "alternatives": ["a slot in the bit case"] }] },
+    { "start": 8.6, "text": "Pull these out.",
+      "expected": [{ "phrase": "these", "isVisual": true, "kind": "object", "referent": "the strip of screwdriver bits pulled from the case", "alternatives": ["the bit holder", "the screwdriver bits"] }] },
+    { "start": 12.0, "text": "This part always takes me ages.",
+      "expected": [{ "phrase": "This", "isVisual": false, "kind": null, "referent": "(not visual: refers to the step of choosing)" }] },
+    { "start": 16.5, "text": "Take this one.",
+      "expected": [{ "phrase": "this one", "isVisual": true, "kind": "object", "referent": "a single screwdriver bit taken off the strip", "alternatives": ["one bit"] }] },
+    { "start": 23.9, "text": "Then it clicks into this.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the chuck of the green cordless drill", "alternatives": ["the cordless drill", "the drill"] }] },
+    { "start": 26.0, "text": "Twist it like this till it's tight.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "twisting the drill's chuck by hand to lock the bit in", "alternatives": ["turning the chuck"] }] },
+    { "start": 31.5, "text": "That's the bit sorted.",
+      "expected": [{ "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to fitting the bit)" }] },
+    { "start": 36.0, "text": "The screw goes right here.",
+      "expected": [{ "phrase": "right here", "isVisual": true, "kind": "location", "referent": "the screw standing in the pale wooden plank next to the gloved hand", "alternatives": ["the spot on the plank by the glove"] }] },
+    { "start": 39.4, "text": "Hold the board like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "a gloved hand pressing the plank flat", "alternatives": ["holding the plank steady with a gloved hand"] }] },
+    { "start": 43.4, "text": "Then drive it in slowly, like that.",
+      "expected": [{ "phrase": "like that", "isVisual": true, "kind": "action", "referent": "the drill driving the screw down into the plank", "alternatives": ["screwing into the wood with the drill"] }] },
+    { "start": 51.0, "text": "That's really all there is to it.",
+      "expected": [
+        { "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to the process)" },
+        { "phrase": "there", "isVisual": false, "kind": null, "referent": "(not visual: existential 'there is')" }
+      ] }
+  ]
+}

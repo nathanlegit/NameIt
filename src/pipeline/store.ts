@@ -42,6 +42,11 @@ export function videoPaths(videoId: string) {
     grounding: path.join(dir, "grounding.json"),
     clipsDir: path.join(dir, "clips"),
     evidenceDir: path.join(dir, "evidence"),
+    // 07_resolve
+    resolutions: path.join(dir, "resolutions.json"),
+    // 09_cues
+    cues: path.join(dir, "cues.json"),
+    descriptionsVtt: path.join(dir, "descriptions.vtt"),
     // API response cache (delete a file to force a fresh call)
     cacheDir: path.join(dir, "cache"),
   };

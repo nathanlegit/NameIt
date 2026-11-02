@@ -106,6 +106,21 @@ export async function cutVideoClip(
   ]);
 }
 
+// Saves frame number `frameIndex` (0-based) of a clip as a JPEG. Evidence is
+// drawn on this exact frame: SAM's boxes belong to the clip's frames, and the
+// nearest 2 fps frame can show a moving hand up to a quarter second away.
+export async function extractClipFrame(clipPath: string, frameIndex: number, outputPath: string): Promise<void> {
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await runCommand("ffmpeg", [
+    "-y", "-loglevel", "error",
+    "-i", clipPath,
+    "-vf", `select=eq(n\\,${frameIndex})`,
+    "-frames:v", "1",
+    "-q:v", "3",
+    outputPath,
+  ]);
+}
+
 export interface ProbedVideo {
   durationSec: number;
   width: number;
@@ -163,17 +178,47 @@ const FRAME_MAX_WIDTH = 1280;
 // Samples frames at 2 fps to frames/frame_00001.jpg, frame_00002.jpg, ...
 // Frame N (1-based) shows the video at time (N - 1) / 2 seconds.
 // Frames are capped at 1280 px wide: plenty for Spark and SAM, and smaller uploads.
+//
+// round=up matters: the fps filter keeps the LAST source frame in each slot.
+// With the default rounding (near), the slot for 13.5 s runs to 13.75 s, so
+// "13.5 s" showed 13.7 s: a moving hand was visibly off from SAM's boxes.
+// With round=up the slot ends at 13.5 s (measured: within one source frame).
 export async function sampleFrames(videoPath: string, framesDir: string): Promise<number> {
   await mkdir(framesDir, { recursive: true });
   await runCommand("ffmpeg", [
     "-y", "-loglevel", "error",
     "-i", videoPath,
-    "-vf", `fps=${FRAME_SAMPLE_FPS},scale='min(${FRAME_MAX_WIDTH},iw)':-2`,
+    "-vf", `fps=${FRAME_SAMPLE_FPS}:round=up,scale='min(${FRAME_MAX_WIDTH},iw)':-2`,
     "-q:v", "3",        // JPEG quality (2 = best, 31 = worst)
     path.join(framesDir, "frame_%05d.jpg"),
   ]);
   const files = await readdir(framesDir);
   return files.filter((name) => name.endsWith(".jpg")).length;
+}
+
+// Cuts a close-up of one box out of a frame, with some context around it
+// (paddingFraction of the box size on each side), clamped to the frame.
+export async function cropImage(
+  inputImagePath: string,
+  outputImagePath: string,
+  box: PixelBox,
+  frame: { width: number; height: number },
+  paddingFraction = 0.25,
+): Promise<void> {
+  const padX = (box.right - box.left) * paddingFraction;
+  const padY = (box.bottom - box.top) * paddingFraction;
+  const left = Math.max(0, Math.floor(box.left - padX));
+  const top = Math.max(0, Math.floor(box.top - padY));
+  const right = Math.min(frame.width, Math.ceil(box.right + padX));
+  const bottom = Math.min(frame.height, Math.ceil(box.bottom + padY));
+  await mkdir(path.dirname(outputImagePath), { recursive: true });
+  await runCommand("ffmpeg", [
+    "-y", "-loglevel", "error",
+    "-i", inputImagePath,
+    "-vf", `crop=${Math.max(1, right - left)}:${Math.max(1, bottom - top)}:${left}:${top}`,
+    "-q:v", "3",
+    outputImagePath,
+  ]);
 }
 
 export interface BoxToDraw {

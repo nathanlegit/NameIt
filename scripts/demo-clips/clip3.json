@@ -1,0 +1,50 @@
+{
+  "name": "clip3",
+  "description": "Gardening clip: filling a terracotta pot with soil from a tray (overhead), then repotting a ficus from a white pot into a grey pot. Two Pexels clips joined, ElevenLabs narration placed at the moments the actions happen.",
+  "sources": [
+    {
+      "pexelsId": 9709745,
+      "pageUrl": "https://www.pexels.com/video/a-person-transferring-soil-to-a-pot-9709745/",
+      "creator": "cottonbro studio",
+      "licence": "Pexels License"
+    },
+    {
+      "pexelsId": 9466222,
+      "pageUrl": "https://www.pexels.com/video/a-person-transferring-a-plant-to-another-pot-9466222/",
+      "creator": "ROCKETMANN TEAM",
+      "licence": "Pexels License"
+    }
+  ],
+  "lines": [
+    { "start": 0.2, "text": "First, fill this about halfway.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the small terracotta pot", "alternatives": ["the clay pot"] }] },
+    { "start": 2.8, "text": "The soil's all in here.",
+      "expected": [{ "phrase": "here", "isVisual": true, "kind": "location", "referent": "the white tray of dark soil", "alternatives": ["the white container of potting soil"] }] },
+    { "start": 5.6, "text": "This is honestly my favourite job.",
+      "expected": [{ "phrase": "This", "isVisual": false, "kind": null, "referent": "(not visual: refers to the task)" }] },
+    { "start": 8.4, "text": "Grab about this much,",
+      "expected": [{ "phrase": "this much", "isVisual": true, "kind": "amount", "referent": "one trowelful of soil", "alternatives": ["a scoop of soil on the trowel"] }] },
+    { "start": 10.4, "text": "and tip it in there.",
+      "expected": [{ "phrase": "there", "isVisual": true, "kind": "location", "referent": "into the terracotta pot", "alternatives": ["the clay pot"] }] },
+    { "start": 14.2, "text": "I use this for everything.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the small hand trowel with a wooden handle", "alternatives": ["the trowel"] }] },
+    { "start": 17.0, "text": "That saves a lot of mess.",
+      "expected": [{ "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to using the trowel)" }] },
+    { "start": 20.0, "text": "One more, right there.",
+      "expected": [{ "phrase": "right there", "isVisual": true, "kind": "location", "referent": "into the terracotta pot", "alternatives": ["the clay pot"] }] },
+    { "start": 22.4, "text": "You want it filled up like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "state", "referent": "the terracotta pot filled with dark soil nearly to the rim", "alternatives": ["the pot full of soil"] }] },
+    { "start": 29.4, "text": "Now, this one needs a bigger home.",
+      "expected": [{ "phrase": "this one", "isVisual": true, "kind": "object", "referent": "the ficus plant in the white pot", "alternatives": ["the rubber plant", "the leafy plant in the white pot"] }] },
+    { "start": 31.9, "text": "Ease it out like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "pulling the plant up by its stem so the root ball comes out of the white pot", "alternatives": ["lifting the plant out of the white pot"] }] },
+    { "start": 33.9, "text": "See all these roots?",
+      "expected": [{ "phrase": "these", "isVisual": true, "kind": "object", "referent": "the root ball of soil and roots under the plant", "alternatives": ["the plant's roots"] }] },
+    { "start": 35.9, "text": "It goes straight into this.",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the larger grey pot", "alternatives": ["the grey plant pot"] }] },
+    { "start": 40.2, "text": "Hold it right here while it settles.",
+      "expected": [{ "phrase": "right here", "isVisual": true, "kind": "location", "referent": "the plant's stem, just above the soil in the grey pot", "alternatives": ["the stem of the plant"] }] },
+    { "start": 44.0, "text": "And that's the whole job.",
+      "expected": [{ "phrase": "that", "isVisual": false, "kind": null, "referent": "(not visual: refers to the process)" }] }
+  ]
+}

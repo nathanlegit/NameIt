@@ -1,0 +1,32 @@
+{
+  "name": "clip5",
+  "description": "Crafts clip: folding a sheet of green patterned origami paper on a white table (overhead), with finished origami pieces, a framed feather and a pine cone nearby. One Pexels clip, ElevenLabs narration placed at the moments the actions happen.",
+  "sources": [
+    {
+      "pexelsId": 6364305,
+      "pageUrl": "https://www.pexels.com/video/a-person-making-origami-6364305/",
+      "creator": "Yogendra Singh",
+      "licence": "Pexels License"
+    }
+  ],
+  "lines": [
+    { "start": 0.3, "text": "Start with one of these.",
+      "expected": [{ "phrase": "these", "isVisual": true, "kind": "object", "referent": "the sheet of green patterned origami paper", "alternatives": ["square origami paper", "the stack of patterned paper squares"] }] },
+    { "start": 2.8, "text": "Fold it corner to corner, like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "action", "referent": "folding the square diagonally into a triangle and pressing it flat", "alternatives": ["folding the paper in half into a triangle"] }] },
+    { "start": 7.6, "text": "This is the first thing I ever learned.",
+      "expected": [{ "phrase": "This", "isVisual": false, "kind": null, "referent": "(not visual: refers to the fold technique)" }] },
+    { "start": 11.6, "text": "Open it back out, so it looks like this.",
+      "expected": [{ "phrase": "like this", "isVisual": true, "kind": "state", "referent": "the paper opened out flat as a square again, with a diagonal crease", "alternatives": ["a flat square sheet"] }] },
+    { "start": 15.6, "text": "That part's easy.",
+      "expected": [{ "phrase": "That", "isVisual": false, "kind": null, "referent": "(not visual: refers to the step)" }] },
+    { "start": 19.8, "text": "Then press right there.",
+      "expected": [{ "phrase": "right there", "isVisual": true, "kind": "location", "referent": "along the folded edge of the paper triangle", "alternatives": ["the crease of the triangle"] }] },
+    { "start": 24.4, "text": "Lift this corner,",
+      "expected": [{ "phrase": "this", "isVisual": true, "kind": "object", "referent": "the top point of the paper triangle", "alternatives": ["the tip of the triangle"] }] },
+    { "start": 27.4, "text": "and pinch it like that.",
+      "expected": [{ "phrase": "like that", "isVisual": true, "kind": "action", "referent": "pinching the tip of the paper between the fingertips to fold it down", "alternatives": ["folding the tip with both hands"] }] },
+    { "start": 30.6, "text": "Mine end up like those.",
+      "expected": [{ "phrase": "those", "isVisual": true, "kind": "object", "referent": "the finished pink origami heart and star on the left of the table", "alternatives": ["the folded paper heart and star"] }] }
+  ]
+}

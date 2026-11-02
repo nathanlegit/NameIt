@@ -19,11 +19,22 @@ import { contextStage } from "./03_context";
 import { detectStage } from "./04_detect";
 import { localiseStage } from "./05_localise";
 import { groundStage } from "./06_ground";
+import { resolveStage } from "./07_resolve";
+import { cuesStage } from "./09_cues";
 import type { Stage } from "./stage";
 import { readVideoMeta, videoPaths, writeVideoMeta } from "./store";
 
-// Stages 07 to 09 join this list in M3.
-const STAGES: Stage[] = [ingestStage, transcribeStage, contextStage, detectStage, localiseStage, groundStage];
+// 08_onscreen (F8) is P1 and not built yet.
+const STAGES: Stage[] = [
+  ingestStage,
+  transcribeStage,
+  contextStage,
+  detectStage,
+  localiseStage,
+  groundStage,
+  resolveStage,
+  cuesStage,
+];
 
 interface RunLogEntry {
   stage: string;

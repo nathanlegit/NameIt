@@ -1,0 +1,147 @@
+[
+  {
+    "videoId": "clip3",
+    "time": 0.2,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the small terracotta pot",
+    "acceptableAlternatives": [
+      "the clay pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 2.8,
+    "phrase": "here",
+    "isVisual": true,
+    "trueReferent": "the white tray of dark soil",
+    "acceptableAlternatives": [
+      "the white container of potting soil"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 5.6,
+    "phrase": "This",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the task)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip3",
+    "time": 8.4,
+    "phrase": "this much",
+    "isVisual": true,
+    "trueReferent": "one trowelful of soil",
+    "acceptableAlternatives": [
+      "a scoop of soil on the trowel"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 10.4,
+    "phrase": "there",
+    "isVisual": true,
+    "trueReferent": "into the terracotta pot",
+    "acceptableAlternatives": [
+      "the clay pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 14.2,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the small hand trowel with a wooden handle",
+    "acceptableAlternatives": [
+      "the trowel"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 17,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to using the trowel)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip3",
+    "time": 20,
+    "phrase": "right there",
+    "isVisual": true,
+    "trueReferent": "into the terracotta pot",
+    "acceptableAlternatives": [
+      "the clay pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 22.4,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "the terracotta pot filled with dark soil nearly to the rim",
+    "acceptableAlternatives": [
+      "the pot full of soil"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 29.4,
+    "phrase": "this one",
+    "isVisual": true,
+    "trueReferent": "the ficus plant in the white pot",
+    "acceptableAlternatives": [
+      "the rubber plant",
+      "the leafy plant in the white pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 31.9,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "pulling the plant up by its stem so the root ball comes out of the white pot",
+    "acceptableAlternatives": [
+      "lifting the plant out of the white pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 33.9,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the root ball of soil and roots under the plant",
+    "acceptableAlternatives": [
+      "the plant's roots"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 35.9,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the larger grey pot",
+    "acceptableAlternatives": [
+      "the grey plant pot"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 40.2,
+    "phrase": "right here",
+    "isVisual": true,
+    "trueReferent": "the plant's stem, just above the soil in the grey pot",
+    "acceptableAlternatives": [
+      "the stem of the plant"
+    ]
+  },
+  {
+    "videoId": "clip3",
+    "time": 44,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the process)",
+    "acceptableAlternatives": []
+  }
+]

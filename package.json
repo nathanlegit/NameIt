@@ -11,7 +11,8 @@
     "make-labels": "tsx scripts/make-labels.ts",
     "pipeline": "tsx src/pipeline/run.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "eval": "tsx src/eval/runEval.ts"
   },
   "dependencies": {
     "@meta-sam/parser": "^0.1.0",

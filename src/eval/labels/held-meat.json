@@ -1,0 +1,346 @@
+[
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: 'That may sound a little bit contradictory' refers to the previous statement)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the blade chuck roast, shown cooked as a pot roast on a platter with carrots, onions and potatoes (close-up, about 12 to 22 s)",
+    "acceptableAlternatives": [
+      "the pot roast on the platter",
+      "the cooked blade chuck roast with vegetables",
+      "the blade chuck roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this first cut of the blade chuck roast') the same pot roast on the platter with carrots and onions",
+    "acceptableAlternatives": [
+      "the pot roast on the platter",
+      "the cooked blade chuck roast",
+      "the first cut of the blade chuck roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('Now this is a very popular cut') the pot roast on the platter, still in close-up",
+    "acceptableAlternatives": [
+      "the cooked blade chuck pot roast",
+      "the blade chuck roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: 'that means cooking it with moist heat')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: relative pronoun in 'the vegetables that you like')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('but this is a very versatile cut', about 36 s) the pot roast on the platter on the table in front of the presenter (bottom of frame, beside the booklets and pepper mill)",
+    "acceptableAlternatives": [
+      "the pot roast on the table in front of her",
+      "the blade chuck roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: relative pronoun in 'like most all of the beef that I buy')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this roast is USDA choice', about 46 s) the raw blade chuck roast on the kitchen counter that she walks to and handles",
+    "acceptableAlternatives": [
+      "the raw roast on the counter",
+      "the uncooked blade chuck roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the purple shield-shaped USDA CHOICE grade stamps on the white fat covering of the raw roast (close-up, about 51 to 60 s, a knife tip points at them)",
+    "acceptableAlternatives": [
+      "the purple USDA Choice stamp",
+      "the grade stamp on the fat",
+      "the shield-shaped stamps on the roast"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "uncertain: probably the raw blade chuck roast on the counter in front of her ('pot roast it like this'; the transcript reads 'pot roast and like this'). Medium shot, about 65 s; she gestures in the air and does not point at anything",
+    "acceptableAlternatives": [
+      "the raw blade chuck roast on the counter in front of her",
+      "the pot roast dish shown at the start",
+      "the roast on the counter"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: relative pronoun in 'almost all of the beef that you buy in the retail meat counter')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('of using this versatile cut', about 92 s) the raw blade chuck roast on the counter in front of the presenter (small, at the bottom of a medium shot)",
+    "acceptableAlternatives": [
+      "the blade chuck roast",
+      "the raw roast on the counter"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the two raw beef cuts lying side by side under the beef chart: the rib cut and the first cut of the blade chuck, cut faces towards the camera",
+    "acceptableAlternatives": [
+      "the two raw meat cuts",
+      "the rib roast and the blade chuck roast side by side",
+      "the actual meat cuts on the counter"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this very tender rib eye section', about 110 s) the rib-eye muscle in the cut face of the meat, pointed at with a pen-like pointer",
+    "acceptableAlternatives": [
+      "the rib eye muscle",
+      "the large lean muscle the pointer touches",
+      "the rib eye section of the cut"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this first part of the chuck', about 116 s) the blade chuck cut next to the rib, where the rib eye continues; the pointer moves across to the left-hand cut. Which cut is rib and which is chuck is not certain from the frames",
+    "acceptableAlternatives": [
+      "the first cut of the blade chuck",
+      "the left-hand cut",
+      "the rib eye muscle continuing into the chuck cut"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this particular roast', about 121 s) the first-cut blade chuck roast shown in close-up beside the rib cut",
+    "acceptableAlternatives": [
+      "the first cut of the blade chuck roast",
+      "the raw roast in close-up"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: 'that's what you want to ask for' refers to the phrase 'first cut of a blade chuck roast')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-meat",
+    "time": 0,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('it's very easy to cut this', about 128 s) the raw blade chuck roast on the cutting board that she starts cutting with a knife",
+    "acceptableAlternatives": [
+      "the blade chuck roast",
+      "the raw roast on the board"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 141.588625,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the rib-eye muscle at the end of the roast next to where the rib bone was removed; her hand rests on it and the knife follows its seam",
+    "acceptableAlternatives": [
+      "the rib eye section of the roast",
+      "the tender lean section under her hand"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 141.588625,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this is where you get your boneless broilable steaks') the same rib-eye section of the roast",
+    "acceptableAlternatives": [
+      "the rib eye section",
+      "the tender section being cut out"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 141.588625,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('take out this very tender part') the rib-eye piece being cut out of the roast along the natural seam",
+    "acceptableAlternatives": [
+      "the rib eye piece",
+      "the boneless rib eye section she cuts out"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 156.908437,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the boneless rib-eye piece she has just removed, which she turns over on the board",
+    "acceptableAlternatives": [
+      "the rib eye piece",
+      "the boneless piece of meat in her hands"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 161.588313,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "the rib-eye piece turned over and standing on the board as a compact boneless block, before she cuts it in two",
+    "acceptableAlternatives": [
+      "the turned-over rib eye piece",
+      "the boneless rib eye block on the board"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this section of the roast') the remaining less tender chuck part of the roast after the rib eye was removed, shown in close-up with the knife",
+    "acceptableAlternatives": [
+      "the rest of the roast",
+      "the less tender part of the roast",
+      "the remaining chuck section"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this is the less tender part') the same remaining chuck section of the roast",
+    "acceptableAlternatives": [
+      "the less tender part of the roast",
+      "the remaining chuck section"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('with this entire cut') a whole uncut first-cut blade chuck roast in close-up, USDA stamps on its side, with the knife tracing where to cut",
+    "acceptableAlternatives": [
+      "the whole blade chuck roast",
+      "the uncut roast in close-up"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('then this less tender part') the less tender chuck portion of that whole roast, indicated with the knife",
+    "acceptableAlternatives": [
+      "the less tender part of the roast",
+      "the chuck portion the knife points at"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this can be used for stewing beef') the same less tender chuck portion, still on screen",
+    "acceptableAlternatives": [
+      "the less tender part of the roast",
+      "the chuck portion"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('using this versatile cut', about 198 s) the blade chuck roast pieces on the counter in front of her; small in a wide shot, so this is a weak visual reference",
+    "acceptableAlternatives": [
+      "the blade chuck roast",
+      "the cut pieces of roast on the counter"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the 'How to Buy Beef Steaks' booklet, shown in close-up with its companion 'How to Buy Beef Roasts' and an AGRICULTURE TV caption",
+    "acceptableAlternatives": [
+      "the How to Buy Beef Steaks booklet",
+      "the USDA booklets",
+      "the beef booklets beside the flowers"
+    ]
+  },
+  {
+    "videoId": "held-meat",
+    "time": 168.765312,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "('this very versatile cut of the blade chuck roast', about 223 s) the cooked pot roast on the platter on the table in front of the presenter",
+    "acceptableAlternatives": [
+      "the pot roast on the table",
+      "the cooked blade chuck roast with vegetables",
+      "the blade chuck roast"
+    ]
+  }
+]

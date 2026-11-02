@@ -1,0 +1,203 @@
+[
+  {
+    "videoId": "held-watch",
+    "time": 0.54,
+    "phrase": "Here",
+    "isVisual": true,
+    "trueReferent": "the water-clock demonstration on the lawn: red garden hose running from the outdoor faucet through the grey dial unit to the nozzle",
+    "acceptableAlternatives": [
+      "the water clock model",
+      "the garden hose, faucet, dial and nozzle set up on the grass",
+      "the grey dial unit with the red hose"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 21.26,
+    "phrase": "these",
+    "isVisual": false,
+    "trueReferent": "(not visual: 'these four elements' refers back to the four elements just listed in speech; screen fades to black then to a watch movement)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 29.02,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "the stop-motion disassembly of the pocket-watch movement: bridges, wheels and the balance lift off and fly out of frame one by one",
+    "acceptableAlternatives": [
+      "taking the watch movement apart piece by piece",
+      "the parts coming off the open watch movement"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 38.54,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the mainspring barrel: the round flat drum touched and then lifted by the tweezers from the row of laid-out watch parts",
+    "acceptableAlternatives": [
+      "the mainspring barrel assembly",
+      "the round barrel part held in the tweezers",
+      "the large flat disc in the middle of the row of parts"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 38.54,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: relative pronoun in 'everything that goes on inside')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 52.14,
+    "phrase": "This",
+    "isVisual": true,
+    "trueReferent": "the coiled mainspring visible inside the giant toothed mainspring barrel of the model",
+    "acceptableAlternatives": [
+      "the mainspring",
+      "the spiral spring inside the large toothed barrel",
+      "the giant mainspring barrel"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 58.14,
+    "phrase": "Here",
+    "isVisual": true,
+    "trueReferent": "the winding stem with its copper crown on the right, the winding gears and the click on the large toothed barrel of the model (a hand turns the crown)",
+    "acceptableAlternatives": [
+      "the winding stem and crown",
+      "the winding gears and click beside the barrel",
+      "the crown and stem on the right of the barrel"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 75.5,
+    "phrase": "here",
+    "isVisual": true,
+    "trueReferent": "the giant balance wheel and hairspring assembly (spoked rim with screws, spiral hairspring in the centre)",
+    "acceptableAlternatives": [
+      "the balance wheel",
+      "the balance wheel and hair spring assembly",
+      "the big wheel with the spiral spring"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 75.5,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: relative pronoun in 'the unit that controls the flow of power')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 103.74,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the parts of the balance assembly just named (balance wheel, hairspring, balance staff, roller and jewel pin); a hand points at the centre and pushes the jewel pin so the wheel swings",
+    "acceptableAlternatives": [
+      "the balance wheel, hairspring and jewel pin",
+      "the balance wheel assembly",
+      "the jewel pin and the balance wheel"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 128.14,
+    "phrase": "this",
+    "isVisual": false,
+    "trueReferent": "(not visual: 'this job of pushing' refers back to the pushing just described)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 128.14,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the pallet: the anchor-shaped lever with a long horizontal arm and fork, laid over the right side of the balance wheel and then moved back and forth by hand",
+    "acceptableAlternatives": [
+      "the pallet lever",
+      "the anchor-shaped lever",
+      "the pallet fork and cross arm"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 128.14,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: conjunction in 'so that when we move the pallet')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 151.327125,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "the red pallet jewel on the upper end of the pallet cross arm, with its angled face (a white arrow points at it)",
+    "acceptableAlternatives": [
+      "the red pallet jewel",
+      "the shape of the red jewel on the pallet arm"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 155.72712499999997,
+    "phrase": "Here",
+    "isVisual": true,
+    "trueReferent": "the escape wheel with hooked teeth that fades in to the right of the pallet",
+    "acceptableAlternatives": [
+      "the escape wheel",
+      "the wheel with hooked teeth next to the pallet"
+    ]
+  },
+  {
+    "videoId": "held-watch",
+    "time": 158.927125,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: conjunction in 'so shaped that they will push')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 158.927125,
+    "phrase": "that",
+    "isVisual": false,
+    "trueReferent": "(not visual: second 'that' of the transcript's repeated 'so shaped that shaped that', a conjunction)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 195.00712499999997,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers back to the event just shown, the mainspring driving the escape wheel briefly until it ran down; no object is pointed at. Borderline: could be read as pointing at that just-seen action)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 199.56712499999998,
+    "phrase": "there",
+    "isVisual": false,
+    "trueReferent": "(not visual: existential 'there's nothing to stop them')",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "held-watch",
+    "time": 270.568937,
+    "phrase": "here",
+    "isVisual": true,
+    "trueReferent": "the watch model on the board: the empty gap between the mainspring barrel (right) and the escape wheel and balance (left), where the train wheels are then added",
+    "acceptableAlternatives": [
+      "the giant watch model",
+      "the gap between the barrel and the escape wheel",
+      "in the model watch"
+    ]
+  }
+]

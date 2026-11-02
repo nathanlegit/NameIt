@@ -1,0 +1,89 @@
+[
+  {
+    "videoId": "clip5",
+    "time": 0.3,
+    "phrase": "these",
+    "isVisual": true,
+    "trueReferent": "the sheet of green patterned origami paper",
+    "acceptableAlternatives": [
+      "square origami paper",
+      "the stack of patterned paper squares"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 2.8,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "folding the square diagonally into a triangle and pressing it flat",
+    "acceptableAlternatives": [
+      "folding the paper in half into a triangle"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 7.6,
+    "phrase": "This",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the fold technique)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip5",
+    "time": 11.6,
+    "phrase": "like this",
+    "isVisual": true,
+    "trueReferent": "the paper opened out flat as a square again, with a diagonal crease",
+    "acceptableAlternatives": [
+      "a flat square sheet"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 15.6,
+    "phrase": "That",
+    "isVisual": false,
+    "trueReferent": "(not visual: refers to the step)",
+    "acceptableAlternatives": []
+  },
+  {
+    "videoId": "clip5",
+    "time": 19.8,
+    "phrase": "right there",
+    "isVisual": true,
+    "trueReferent": "along the folded edge of the paper triangle",
+    "acceptableAlternatives": [
+      "the crease of the triangle"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 24.4,
+    "phrase": "this",
+    "isVisual": true,
+    "trueReferent": "the top point of the paper triangle",
+    "acceptableAlternatives": [
+      "the tip of the triangle"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 27.4,
+    "phrase": "like that",
+    "isVisual": true,
+    "trueReferent": "pinching the tip of the paper between the fingertips to fold it down",
+    "acceptableAlternatives": [
+      "folding the tip with both hands"
+    ]
+  },
+  {
+    "videoId": "clip5",
+    "time": 30.6,
+    "phrase": "those",
+    "isVisual": true,
+    "trueReferent": "the finished pink origami heart and star on the left of the table",
+    "acceptableAlternatives": [
+      "the folded paper heart and star"
+    ]
+  }
+]

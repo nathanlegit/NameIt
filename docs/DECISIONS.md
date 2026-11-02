@@ -21,6 +21,97 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 1 Nov 2026: M3 held-out result (Prelinger films, real narration)
+
+**Protocol.** Two excerpts chosen and labelled by a separate agent working only from the transcript (stages 01 and 02) and the frames, before stages 03 to 09 had ever run on them. Code and prompts were frozen after the scripted run; no change was made after seeing held-out output except the eval's cost message. Labels are drafts and need Nathan's check (four are flagged uncertain in the label files' `trueReferent` text).
+- `held-meat`: *How to Buy Meat (Part II)*, USDA, ca. 1970, 234 s. A presenter cuts a blade chuck roast. 26 visual references, 6 decoys.
+- `held-watch`: *How a Watch Works*, Jam Handy / Hamilton, 1949, 278 s. Hands assemble a giant watch model. 11 visual references, 9 decoys.
+- Rejected films and reasons are in the agent's notes: three for no licence in the metadata, two marked "All Rights Reserved", one for wartime propaganda, several silent or voice-over over wide shots.
+
+**Held-out result: Name It beats the baseline.** These are the headline numbers.
+
+| Metric | Target | Name It | No-grounding baseline |
+|---|---|---|---|
+| Detection recall / precision | ≥ 80% / ≥ 75% | 86% (32/37) / 100% (0 of 15 decoys) | (same detector) |
+| Resolution accuracy | ≥ 70% | **75%** (24/32) | 60% (18/30) |
+| Hallucination rate (ready and wrong) | ≤ 10% | **22%** | 41% |
+| `ready` precision | ≥ 85% | **78%** (of 18) | 59% (of 27) |
+| Abstention rate | 10 to 25% | 0% | 6% |
+| Unresolved visual references per minute | lower | 4.3 → **1.5** | 4.3 → 2.2 |
+| Cue timing fit | 100% | 100% (2 inline of 36), 0 overlaps | n/a |
+
+All 7 clips: accuracy 79% vs 74%, hallucination 18% vs 25%.
+
+Why Name It wins on real footage, from the per-item list in EVAL.md:
+- **It uses the narrator's names.** "the rib eye section", "the less tender part", "the pallet", "the escape wheel". The baseline sees only frames and describes shapes ("a toothed ring", "a raw marbled block"), which the judge marks as not identifying the thing. The glossary and transcript context are doing the work the scripted clips couldn't show, because there the names were rarely said.
+- **Its confidence is more useful here.** 14 of 32 answers went to `needs_review`, and 4 of Name It's 8 wrong answers are among them; the baseline put 11 of its 12 wrong answers in `ready`. Still short of target: hallucination 22% vs ≤ 10%.
+
+Failures and negative results on real narration:
+- **Long turns break timing.** The meat presenter barely pauses, so silence detection gives 6 turns, the first 141 s long. A reference's time is then a proportional guess inside a 141 s turn, so localisation can land on the wrong moment ("the USDA grade stamps" became "the roast"). All 4 meat detection misses are "this" inside these long turns. Fix for later (not applied, to keep the held-out set clean): split long segments at the quietest points, or use the model's own turn boundaries inside them.
+- **No pauses, no inline cues.** All 26 held-meat cues are extended, so the video would pause 26 times in 4 minutes. A viewer setting such as "only pause for ready cues" or a lower pause budget per minute is needed (M4 player).
+- **SAM on 1949 stop-motion footage:** 7/10 grounded on the watch film, 22/26 on the meat film. Old footage works, but less reliably than stock footage (58/58 on the scripted clips).
+- **Transcription glitches on old audio:** a raw `<|speaker_A|>` token leaked into one watch turn; "palace" for "pallet"; repeated words. None stopped detection.
+- **Eval matching for long turns:** many labels share one turn start, so same-phrase labels are paired with candidates in spoken order (k-th label ↔ k-th occurrence), which is now explicit in `src/eval/match.ts` and tested.
+
+Small held-out set (37 references, 2 films): a 15-point accuracy gap is about 5 items. It is a real signal in the expected direction, not a precise number.
+
+## 1 Nov 2026: M3 test set expanded (scripted clips 3 to 5)
+
+Three new scripted clips, built the same way as clip1 and clip2 (Pexels footage, our narration, labels from the script): `clip3` potting and repotting (gardening, 47 s), `clip4` fitting a drill bit and driving a screw (assembly, 55 s), `clip5` origami (crafts, 34 s). Scripted set now: 5 clips, 46 visual references, 15 decoys, 3.8 minutes. A peanut-butter-sandwich clip (Pexels 7254279) was rejected: handheld, hands far from camera, a child's face in shot, referents too unclear to label.
+
+Narration lines closer than about 0.4 s merge into one transcript turn (silence detection needs 0.4 s), which breaks label matching. Lines are now spaced at least 0.5 s apart; the build report flags anything tighter.
+
+**Scripted result (5 clips): Name It and the baseline are tied.** Resolution accuracy 83% (38/46) each; `ready` precision 84% each (Name It 38 ready, baseline 44); detection recall 100%, precision 94% (3 false alarms: "This is the first thing I ever learned"-style lines read as pointing at the current step); cue timing fit 100% (42 inline of 58 cues), 0 overlaps.
+- Name It wins on naming and counting: "flour" vs the baseline's "white powder"; "a row of bits" and "the bit" where the baseline named the whole holder.
+- The baseline wins on motion and some places: "batter slides from the spatula" vs Name It's "lifts the spatula"; "hands on the stem" vs Name It's "the grey pot".
+- Both miss the hard ones: a paper crease ("press right there"), a specific corner ("this corner"), and "those" pointing at finished pieces across the table.
+- **Negative result: confidence does not separate right from wrong.** Wrong answers scored 0.85 to 0.99, the same as right ones. The two self-consistency answers usually agree even when wrong, because they share the same misreading of the frame. Name It does send more items to review (8 vs 2), and 2 of its 3 `needs_review` items in the error list were wrong, but that is weak.
+- The baseline guesses gender ("She smooths...", "She pinches...") throughout; Name It never does. Not captured by the accuracy metric.
+- Unlabelled: the detector also flags anaphoric "it" in sentences like "fold **it** like this" (9 cases on clips 1, 3 and 5). They point at visible things, but they are pronouns, not the deictic words the labels cover, so they are listed in EVAL.md and not counted either way.
+
+Tuning stopped here so the held-out result is honest.
+
+## 1 Nov 2026: M3 (resolve, confidence, cues, first eval)
+
+**First eval, scripted clips only (clip1 + clip2: 18 visual references, 6 decoys, 1.6 minutes).** Full table in `docs/EVAL.md`.
+
+| Metric | Target | Name It | No-grounding baseline |
+|---|---|---|---|
+| Detection recall / precision | ≥ 80% / ≥ 75% | 100% / 100% | (same detector) |
+| Resolution accuracy | ≥ 70% | 89% (16/18) | 94% (17/18) |
+| Hallucination rate (ready and wrong) | ≤ 10% | 12% | 6% |
+| Abstention rate | 10 to 25% | 0% | 0% |
+| Unresolved visual references per minute | lower | 11.6 → 1.3 | 11.6 → 0.6 |
+| Cue timing fit | 100% | 100% (14 inline of 20 cues), 0 overlaps | n/a |
+
+**Negative result: grounding does not beat the baseline on the scripted clips.** The difference is one item out of 18, which is noise at this size, but Name It is not ahead. What the errors show:
+- Name It's misses are all **actions** ("fold it like this", "falls off like that", "press both sides like that"). Its resolve step looked at one key frame plus the box, and a single frame can't show a movement ("a hand lifts the spatula"). The baseline sees 7 frames over 3 s. Fix tried: resolve now also gets the frame sequence for actions. That fixed "fold" but "falls off" flipped from right to wrong between runs, so treat single items as noisy.
+- The baseline's miss is **naming**: "white powder" where the video says flour. The glossary is doing its job there.
+- The scripted clips are easy: one presenter, tight close-ups, few distractors, clean audio. A frame sequence is enough to name things there. The held-out real-narration clips are the real test of whether grounding earns its cost.
+- **Confidence does not yet separate right from wrong**: every answer is `ready` (0% abstention), including the wrong ones. Weights and thresholds are untuned first guesses; tuning them needs more labelled references than 18.
+
+**Correction to the M2 entry below (bug found by M3's evidence check):** two clip1 overlays (`t4-c6` "this much", `t6-c20` "like that") had SAM's box drawn off the object. SAM was right; the overlay was wrong. Two causes:
+1. Evidence was drawn on the nearest 2 fps frame, not on the clip frame SAM boxed. Fix: Stage 06 extracts the exact clip frame (`evidence/<id>.frame.jpg`) and draws on that.
+2. The 2 fps frames were about 0.2 s late. ffmpeg's `fps` filter keeps the *last* source frame in each slot, and the default rounding makes the slot for 13.5 s run to 13.75 s. Measured with PSNR: frame "13.5 s" matched the clip frame at 13.7 s (44 dB vs about 22 dB for its neighbours). Fix: `fps=2:round=up`; re-measured within one source frame (0.04 s).
+
+The "checked by eye: 11/11" in M2 was too generous: the boxes were *near* the spoon. Spark's new `evidenceMatches` answer caught it ("green box marks empty background wall above the hand").
+
+Decisions:
+- **Self-consistency uses two views, not just two temperatures.** Answer A: key frame + box overlay at temperature 0. Answer B: overlay + close-up crop of the green box at temperature 0.7. Agreement is word overlap divided by the shorter name (`src/lib/names.ts`), so "the walnuts" agrees fully with "the glass jar of walnuts".
+- **Confidence formula (`src/lib/confidence.ts`):** 0.5 × Spark's mean confidence + 0.25 × agreement + 0.25 × grounding strength (SAM score and selection margin), + 0.05 for a glossary match (not for "mixture" entries, whose names go stale). Caps: no SAM evidence, or `evidenceMatches` false, means at most 0.70 (`needs_review`). Thresholds as the PRD: 0.75 and 0.45. All untuned.
+- **Resolve schema gains `evidenceMatches`** (M0 lesson 2). For actions and states, the prompt says the box marks the thing acted on, not the motion; without that, every action was flagged as a mismatch.
+- **The writer and resolver say "the presenter" or "a hand", never he/she** (M0 lesson 5). The PRD 12.6 example's "She tips..." is now "A hand tips...". (The baseline prompt has no such rule and does say "She": another point for Name It's wording, not measured.)
+- **Cue placement only uses the gap right before or right after the reference's sentence** (narrows PRD F9 step 1). The first clip2 run put the cue for "drop this in" in a gap after the *next* sentence, so the viewer would hear the descriptions in the wrong order. Otherwise extended. Earlier references claim a shared gap first (DCMP: sequence matters most).
+- **The short cue is kind-aware:** the first writer prompt said "usually just the name", which turned "firm it down like this" into "The black weed membrane." Now: name for objects, state for states, place for locations, the movement with its verb for actions.
+- **Hyphenated words count as separate words.** With a 1-word budget, Spark wrote "Center-hole." and "Pepper-seedling."; TTS speaks two words. The prompt also says not to do it.
+- **WebVTT end times are clipped to the next cue**, since an extended cue's nominal end would otherwise overlap the next cue in the file.
+- **Eval judge is Spark (text only), not Wonder.** The judge grades both columns, so any bias applies to both. Nathan's spot-check corrections go in `src/eval/overrides.json`. Wonder (PRD 11.1, "optional") isn't used: its request shape isn't verified and the judge task is simple.
+- **Baseline per PRD 13.3:** same detector, same ±1.5 s frames Stage 05 saw, the sentence, one call. No transcript or glossary, so it can't use names said earlier.
+- **Two unlabelled visual references:** clip1 "Keep folding **it** like this" and "You want **it** to look like this" (both the batter). The detector found them correctly; the scripts didn't label them. Listed in EVAL.md and not counted.
+- **Video status becomes `ready_for_review`** when Stage 09 finishes.
+
+Cost per clip for stages 07 and 09: about $0.40 to $0.80 (two resolve calls + one writer call per reference). Eval: about $0.50 for both clips on a cold cache.
+
 ## 31 Oct 2026: M2 (context, detect, localise, ground)
 
 **Result on 2 clips** (clip1 cooking, 65 s; clip2 gardening, 28 s; scripts and expected answers in `scripts/demo-clips/`):
