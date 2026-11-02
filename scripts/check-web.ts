@@ -17,6 +17,8 @@ import puppeteer, { type Page } from "puppeteer-core";
 const BASE = process.env.BASE_URL ?? "http://localhost:3123";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const VIDEO_ID = "clip2";
+// The review step saves to data/ through the local API; the deployed demo keeps reviews in the browser instead.
+const IS_LOCAL = /localhost|127\.0\.0\.1/.test(BASE);
 
 let failures = 0;
 function check(condition: boolean, message: string): void {
@@ -63,7 +65,7 @@ async function axeScan(page: Page, url: string, scheme: "light" | "dark"): Promi
 
 async function main(): Promise<void> {
   const reviewPath = path.join("data", "videos", VIDEO_ID, "review.json");
-  if (existsSync(reviewPath)) throw new Error(`${reviewPath} exists; this check would overwrite a real review. Move it first.`);
+  if (IS_LOCAL && existsSync(reviewPath)) throw new Error(`${reviewPath} exists; this check would overwrite a real review. Move it first.`);
 
   const browser = await puppeteer.launch({
     executablePath: CHROME,
@@ -125,7 +127,11 @@ async function main(): Promise<void> {
     const afterSeek = await player.evaluate(() => (window as unknown as { __spoken: unknown[] }).__spoken.length);
     check(afterSeek <= before + 1, `seeking 10 s ahead fired ${afterSeek - before} cues (should not replay skipped ones)`);
 
-    // 3. Review, keyboard only.
+    // 3. Review, keyboard only (local server only).
+    if (!IS_LOCAL) {
+      console.log("SKIP  review save checks (not a local server)");
+      return;
+    }
     const review = await browser.newPage();
     await review.goto(`${BASE}/review/${VIDEO_ID}`, { waitUntil: "networkidle0" });
     review.on("request", (request) => { if (request.url().includes("/api/review")) console.log(`      (save request: ${request.method()})`); });
@@ -150,8 +156,10 @@ async function main(): Promise<void> {
   } finally {
     await browser.close();
     // Leave no test review behind.
-    await rm(reviewPath, { force: true });
-    await rm(path.join("data", "videos", VIDEO_ID, "edits.json"), { force: true });
+    if (IS_LOCAL) {
+      await rm(reviewPath, { force: true });
+      await rm(path.join("data", "videos", VIDEO_ID, "edits.json"), { force: true });
+    }
   }
 
   console.log(failures === 0 ? "\nAll checks passed." : `\n${failures} check(s) failed.`);
