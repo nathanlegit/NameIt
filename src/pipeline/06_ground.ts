@@ -17,7 +17,7 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { decodeMaskToRLE, type RLEObject } from "@meta-sam/parser";
+import { decodeMaskToRLE, decodeMaskToSVGPath, type RLEObject } from "@meta-sam/parser";
 import { readJson, writeJson } from "../lib/cache";
 import { mapWithConcurrency } from "../lib/concurrency";
 import { cutVideoClip, drawBoxesOnImage, extractClipFrame, GROUNDING_CLIP_FPS, type BoxToDraw } from "../lib/ffmpeg";
@@ -57,11 +57,12 @@ export interface GroundingRecord {
   evidence: MaskEvidence | null;    // null when SAM found nothing
 }
 
-interface MaskFile {
+export interface MaskFile {
   referenceId: string;
   framePath: string;
   bounds: PixelBox; // the raster below covers exactly this box, in frame pixels
   rle: RLEObject;   // COCO RLE, size = [height, width] of the raster
+  svgPath: string;  // the mask outline as an SVG path, x = column and y = row inside `bounds` (for the review UI)
 }
 
 function specificConceptFor(localised: LocalisedReference): string | null {
@@ -201,6 +202,7 @@ export const groundStage: Stage = {
             framePath: samFramePath,
             bounds: chosenBox.box,
             rle: decodeMaskToRLE(chosenBox.mask),
+            svgPath: decodeMaskToSVGPath(chosenBox.mask),
           };
           await writeJson(maskPath, maskFile);
         }

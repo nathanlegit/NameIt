@@ -1,0 +1,9 @@
+# Uploaded by `vercel deploy`: the app plus public/demo (the exported demo videos
+# and bundles). The pipeline's working data and sources stay local.
+data/
+spike/
+.env
+.env.local
+.env.*.local
+.next/
+node_modules/

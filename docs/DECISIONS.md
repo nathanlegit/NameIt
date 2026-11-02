@@ -21,6 +21,23 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 2 Nov 2026: M4 (review UI, accessible player, eval page)
+
+Built: `/` video list, `/review/[videoId]` (F10), `/watch/[videoId]` (F11), `/eval` (PRD 13.4), `POST /api/review/[videoId]`. Checked by `pnpm check-web`, which runs real Chrome with axe-core (WCAG 2.1 A/AA, light and dark: 0 violations on all four page types) and drives the player and review UI by keyboard.
+
+Decisions:
+- **Static export, not a database.** `pnpm export-demo` writes `public/demo/<id>/` (720p H.264 video, `bundle.json`, evidence frames) and pages are prerendered from it. `public/demo/` is gitignored: it contains third-party video. Deployed with `vercel deploy` from a local checkout (`.vercelignore` keeps `data/` out).
+- **Reviews live in `review.json`, separate from `cues.json`**, so re-running the pipeline never wipes a person's decisions. Edits are logged to `edits.json` as PRD F10 asks. On Vercel the filesystem is read-only, so the API returns 403 and the browser keeps decisions in localStorage ("demo mode", labelled on the page); the player on that device uses them.
+- **Mask outlines come from SAM's own parser.** Stage 06 now stores `decodeMaskToSVGPath()` in each `mask.json`; the review UI draws it as SVG over the exact frame SAM boxed. (The parser's RLE-to-path function is internal, so it can't run at export time.)
+- **The player never talks over the presenter.** Placement assumed 2.5 words per second, but TTS voices vary. If an inline cue is still speaking when the next turn starts, the player pauses the video until it finishes.
+- **Seeking fires nothing.** Cues fire only when normal playback (≤ 1 s per frame) crosses their start time.
+- **Player modes:** "reviewed plus confident drafts" (default for the demo, labelled) and "reviewed only" (PRD F11). A "built-in voice" switch lets screen reader users hear cues through their own reader only (the aria-live region), with extended pauses timed from the word count. Without it, a screen reader user would hear every cue twice.
+- **Keyboard:** player Space, D, M, [ ], ← →; review A, E (Enter saves, Esc cancels), R, U (undo), J, K, Space, P. Approve and reject move to the next item. Bug found by the browser check: after Enter saved an edit, focus stayed in the text box, so the next shortcut (R) was typed into it. The editor now gives up focus on save and cancel.
+- **Long turns are shown as an excerpt around the phrase** (held-meat has turns of 141 s).
+- **Not built (cut lines and P1):** no upload page (videos are added with `pnpm add-video`; PRD 10.1 already disables upload on the live site), no ±1 s scrub in review (PRD cut line; Space plays the 5 s around the item instead), no T or W keys (P1), no pre-rendered ElevenLabs cue audio yet (F11b, P1).
+- **Dependencies:** Next.js 16.4.3, not 16.4.4. 16.4.4 came out the same day, so pnpm's minimum-release-age check rejected it. When I first asked for it, pnpm wrote an exception file (`pnpm-workspace.yaml`) to get around that check, so I deleted that file and pinned the older release. Next's own TypeScript check is off (`ignoreBuildErrors`) because the repo uses TypeScript 7; `pnpm typecheck` covers it.
+- **File tracing:** the save API builds paths under `data/videos`, so Next wanted to bundle 14,532 pipeline files (including source videos) into the function. `outputFileTracingExcludes` keeps `data/` and `public/demo/` out; the function is 113 small files.
+
 ## 1 Nov 2026: M3 held-out result (Prelinger films, real narration)
 
 **Protocol.** Two excerpts chosen and labelled by a separate agent working only from the transcript (stages 01 and 02) and the frames, before stages 03 to 09 had ever run on them. Code and prompts were frozen after the scripted run; no change was made after seeing held-out output except the eval's cost message. Labels are drafts and need Nathan's check (four are flagged uncertain in the label files' `trueReferent` text).

@@ -1,16 +1,47 @@
+# ---------------------------------------------------------------------------
+# Hackathon rules: public repo, no secrets, no third-party video. Keep it so.
+# ---------------------------------------------------------------------------
+
 # Secrets: never commit. Copy .env.example to .env.local instead.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.pem
+*.key
 
-# Videos, frames and pipeline outputs. Third-party video must never be committed.
+# Pipeline working data: source videos, frames, audio, API caches, Prelinger downloads.
 data/
+
+# Web export: third-party video and frames, rebuilt by `pnpm export-demo`.
+public/demo/
+
+# Media anywhere else (third-party footage, narration, renders, screenshots).
 *.mp4
 *.mov
 *.webm
+*.mkv
 *.wav
+*.mp3
+*.m4a
+*.aiff
 
+# Dependencies and build output
 node_modules/
 .next/
+out/
 dist/
+.vercel/
+next-env.d.ts
+*.tsbuildinfo
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local tool settings
+.claude/settings.local.json
 .DS_Store
+.idea/
+.vscode/
