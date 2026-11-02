@@ -1,9 +1,10 @@
-# Uploaded by `vercel deploy`: the app plus public/demo (the exported demo videos
-# and bundles). The pipeline's working data and sources stay local.
-data/
-spike/
+# Deploys use `pnpm deploy-demo` (vercel build + deploy --prebuilt), which uploads
+# only .vercel/output, so this file is a safety net for a plain `vercel deploy`:
+# never upload secrets, pipeline data, or archives holding third-party footage.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+data/
+*.zip
 .next/
 node_modules/

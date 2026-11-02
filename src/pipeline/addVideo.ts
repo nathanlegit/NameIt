@@ -4,8 +4,7 @@
 //                  [--licence "Pexels License"] [--attribution "..."] [--force]
 //
 // Copies the file to data/videos/<videoId>/source.<ext> and writes meta.json
-// with status "uploaded". Then run: pnpm run pipeline <videoId>
-// (The upload page in M4 will call addVideo() directly.)
+// with status "uploaded". Then run: pnpm run-pipeline <videoId>
 
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, rm, stat } from "node:fs/promises";
@@ -98,7 +97,7 @@ async function main(): Promise<void> {
     overwrite: values.force,
   });
   console.log(`Added "${meta.title}" as ${meta.id} (${meta.sourcePath}).`);
-  console.log(`Next: pnpm run pipeline ${meta.id}`);
+  console.log(`Next: pnpm run-pipeline ${meta.id}`);
 }
 
 // Only run the CLI when this file is executed directly, not when imported.

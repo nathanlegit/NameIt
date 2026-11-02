@@ -27,23 +27,12 @@ import {
 import { cueAudioKey } from "@/src/web/cueAudio";
 import { speakCue, unlockAudio, waitForReading, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
 import { excerptAround } from "@/src/web/text";
+import { formatClock, spokenTime } from "@/src/web/time";
 
 const DUCKED_VOLUME = 0.3;
 const SEEK_STEP_SEC = 5;
 const DEFAULT_RATE = 1.1;
 const SCRIPT_LEAD_IN_SEC = 1.5; // clicking a script line starts a little before the cue
-
-function formatTime(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
-}
-
-function spokenTime(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds));
-  const minutes = Math.floor(safe / 60);
-  const rest = safe % 60;
-  return minutes > 0 ? `${minutes} min ${rest} s` : `${rest} s`;
-}
 
 export function Player({ bundle }: { bundle: VideoBundle }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -314,7 +303,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
         </div>
 
         <div className="desc-panel">
-          <span className="tag" aria-hidden="true">{formatTime(activeCue ? activeCue.start : time)}</span>
+          <span className="tag" aria-hidden="true">{formatClock(activeCue ? activeCue.start : time)}</span>
           {/* The live region: every spoken description is also announced to screen readers and Braille displays. */}
           <span className={`text${activeCue && descriptionsOn ? "" : " idle"}`} aria-live="polite" aria-atomic="true">
             {descriptionText}
@@ -322,7 +311,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
         </div>
 
         <div className="seek">
-          <span className="time" aria-hidden="true">{formatTime(time)}</span>
+          <span className="time" aria-hidden="true">{formatClock(time)}</span>
           <div className="seek-track">
             <div className="rail" />
             <div className="fill" style={{ width: `${progressPercent}%` }} />
@@ -340,7 +329,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
               onChange={(event) => seekTo(Number(event.target.value))}
             />
           </div>
-          <span className="time end" aria-hidden="true">{formatTime(bundle.durationSec)}</span>
+          <span className="time end" aria-hidden="true">{formatClock(bundle.durationSec)}</span>
         </div>
 
         <div className="controls" role="group" aria-label="Playback controls">
@@ -379,7 +368,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
                     className={activeCue?.id === cue.id ? "active" : undefined}
                     onClick={() => seekTo(cue.start - SCRIPT_LEAD_IN_SEC)}
                   >
-                    <span className="time"><span className="visually-hidden">Go to </span>{formatTime(cue.start)}</span>
+                    <span className="time"><span className="visually-hidden">Go to </span>{formatClock(cue.start)}</span>
                     <span className="said">
                       {excerpt ? <>{excerpt.before}<mark>{excerpt.phrase}</mark>{excerpt.after}</> : null}
                     </span>

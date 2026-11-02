@@ -1,6 +1,6 @@
 // CLI: runs the pipeline stages for one video, in order.
 //
-//   pnpm run pipeline <videoId> [--from 02] [--to 02] [--force]
+//   pnpm run-pipeline <videoId> [--from 02] [--to 02] [--force]
 //
 // A stage is skipped when its outputs already exist, so re-running is cheap.
 // --force re-runs every stage in the chosen range. (API responses are cached
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
     },
   });
   const videoId = positionals[0];
-  if (!videoId) throw new Error("Usage: pnpm run pipeline <videoId> [--from 02] [--to 02] [--force]");
+  if (!videoId) throw new Error("Usage: pnpm run-pipeline <videoId> [--from 02] [--to 02] [--force]");
 
   loadLocalEnv();
   await readVideoMeta(videoId); // fails early with a helpful message if the video doesn't exist

@@ -106,8 +106,6 @@ export const cuesStage: Stage = {
         spokenDurationSec: placement.spokenDurationSec,
         placementReason: placement.reason,
         bucket: resolution.bucket,
-        reviewStatus: "draft",
-        finalText: null,
       };
     });
 

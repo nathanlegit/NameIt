@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { loadIndex } from "@/src/web/loadBundle";
-
-function formatDuration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const rest = Math.round(seconds % 60);
-  return `${minutes}:${String(rest).padStart(2, "0")}`;
-}
+import { formatClock } from "@/src/web/time";
 
 const SPLIT_LABEL = { held_out: "Real narration (held-out)", scripted: "Scripted, synthetic narration", other: "Other" } as const;
 
@@ -43,7 +38,7 @@ export default async function HomePage() {
 
       {videos.length === 0 ? (
         <p className="lede" style={{ marginTop: 20 }}>
-          No processed videos yet. Run <code>pnpm run pipeline &lt;videoId&gt;</code>, then <code>pnpm export-demo</code>.
+          No processed videos yet. Run <code>pnpm run-pipeline &lt;videoId&gt;</code>, then <code>pnpm export-demo</code>.
         </p>
       ) : (
         <ul className="video-list">
@@ -56,7 +51,7 @@ export default async function HomePage() {
                   <span className="num" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                   <div className="thumb">
                     {video.thumbUrl ? <img src={video.thumbUrl} alt="" /> : <div className="placeholder" />}
-                    <span className="duration"><span className="visually-hidden">Length </span>{formatDuration(video.durationSec)}</span>
+                    <span className="duration"><span className="visually-hidden">Length </span>{formatClock(video.durationSec)}</span>
                   </div>
                   <div style={{ minWidth: 0 }}>
                     <h3>{video.title}</h3>

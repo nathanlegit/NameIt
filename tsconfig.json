@@ -24,7 +24,6 @@
         "./*"
       ]
     },
-    "allowJs": true,
     "incremental": true,
     "plugins": [
       {
@@ -34,9 +33,9 @@
   },
   "include": [
     "src",
-    "spike",
     "scripts",
     "app",
+    "next.config.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

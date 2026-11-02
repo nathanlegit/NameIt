@@ -9,6 +9,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { writeJson } from "@/src/lib/cache";
+import { isValidVideoId } from "@/src/lib/videoId";
 import { videoPaths } from "@/src/pipeline/store";
 import type { VideoBundle } from "@/src/web/bundle";
 import { canSaveReviews } from "@/src/web/loadBundle";
@@ -27,7 +28,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ vid
     return Response.json({ error: "Demo mode: reviews are kept in your browser." }, { status: 403 });
   }
   const { videoId } = await params;
-  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(videoId)) return Response.json({ error: "Bad video id" }, { status: 400 });
+  if (!isValidVideoId(videoId)) return Response.json({ error: "Bad video id" }, { status: 400 });
   const paths = videoPaths(videoId);
   if (!existsSync(paths.meta)) return Response.json({ error: "No such video" }, { status: 404 });
 
@@ -35,8 +36,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ vid
   if (!parsed.success) return Response.json({ error: parsed.error.message }, { status: 400 });
 
   const review = parsed.data;
-  await writeJson(path.join(paths.dir, "review.json"), review);
-  await writeJson(path.join(paths.dir, "edits.json"), review.edits);
+  await writeJson(paths.review, review);
+  await writeJson(paths.edits, review.edits);
 
   const bundlePath = path.join(process.cwd(), "public", "demo", videoId, "bundle.json");
   if (existsSync(bundlePath)) {

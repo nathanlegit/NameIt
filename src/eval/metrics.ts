@@ -68,6 +68,11 @@ export interface SplitMetrics {
   overlaps: number;
 }
 
+// 0.754 -> "75%"; null -> "–".
+export function percent(value: number | null): string {
+  return value === null ? "–" : `${Math.round(value * 100)}%`;
+}
+
 export function ratio(numerator: number, denominator: number): number | null {
   return denominator === 0 ? null : numerator / denominator;
 }

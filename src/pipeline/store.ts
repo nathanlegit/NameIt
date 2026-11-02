@@ -7,6 +7,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { writeJson } from "../lib/cache";
 import { probeVideo } from "../lib/ffmpeg";
+import { isValidVideoId } from "../lib/videoId";
 import type { VideoMeta } from "../types";
 
 export const VIDEOS_ROOT = path.join("data", "videos");
@@ -49,14 +50,14 @@ export function videoPaths(videoId: string) {
     descriptionsVtt: path.join(dir, "descriptions.vtt"),
     // API response cache (delete a file to force a fresh call)
     cacheDir: path.join(dir, "cache"),
+    // Review (web app): the reviewer's decisions, and the edit log on its own (PRD F10)
+    review: path.join(dir, "review.json"),
+    edits: path.join(dir, "edits.json"),
   };
 }
 
-// Video ids appear in URLs (/review/<id>) and folder names, so keep them simple.
-const VIDEO_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/;
-
 export function assertValidVideoId(videoId: string): void {
-  if (!VIDEO_ID_PATTERN.test(videoId)) {
+  if (!isValidVideoId(videoId)) {
     throw new Error(`Video id "${videoId}" must be lowercase letters, digits and dashes (e.g. "banana-bread-1").`);
   }
 }

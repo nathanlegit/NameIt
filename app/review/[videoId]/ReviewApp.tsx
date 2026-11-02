@@ -16,6 +16,7 @@ import { approve, currentText, itemStatus, reject, reviewProgress, saveEdit, und
 import { cueAudioKey } from "@/src/web/cueAudio";
 import { speakCue, warmUpVoices, type SpeechHandle } from "@/src/web/speech";
 import { excerptAround } from "@/src/web/text";
+import { formatClock } from "@/src/web/time";
 import { EvidenceView } from "../../components/EvidenceView";
 
 const CLIP_HALF_SEC = 2.5;
@@ -59,11 +60,6 @@ function Sentence({ item }: { item: BundleItem }) {
       {excerpt.after}
     </span>
   );
-}
-
-function formatClock(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, "0")}`;
 }
 
 // Neighbouring turns can be minutes long too: show only the part nearest the item.

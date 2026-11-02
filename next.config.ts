@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   // (.env.local is kept out of deployments by scripts/deploy.sh, not here: the
   // Vercel builder lists .env files in the functions regardless of these excludes.)
   outputFileTracingExcludes: {
-    "*": ["./data/**/*", "./public/demo/**/*", "./spike/**/*", "./scripts/**/*"],
+    "*": ["./data/**/*", "./public/demo/**/*", "./scripts/**/*"],
   },
 };
 

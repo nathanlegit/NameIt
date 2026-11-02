@@ -11,33 +11,11 @@
 import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { readJson } from "../src/lib/cache";
 import { TEST_SET } from "../src/eval/testSet";
 import { loadLocalEnv } from "../src/meta/client";
-import { videoPaths } from "../src/pipeline/store";
-import { DESCRIBER_VOICE_ID, requireElevenLabsKey, synthesise } from "../src/tts/elevenlabs";
-import type { Cue } from "../src/types";
-import { cueAudioKey, normaliseCueText } from "../src/web/cueAudio";
-import { readReviewState } from "./export-demo";
-
-export function describerVoiceId(): string {
-  return process.env.ELEVENLABS_DESCRIBER_VOICE_ID || DESCRIBER_VOICE_ID;
-}
-
-export function cueAudioDir(videoId: string): string {
-  return path.join(videoPaths(videoId).dir, "cue-audio", describerVoiceId());
-}
-
-// Every text the player might speak for this video.
-export async function speakableTexts(videoId: string): Promise<string[]> {
-  const cues = await readJson<Cue[]>(videoPaths(videoId).cues);
-  const review = await readReviewState(videoId);
-  const texts = [
-    ...cues.map((cue) => (cue.delivery === "inline" ? cue.shortText : cue.longText)),
-    ...Object.values(review.decisions).map((decision) => decision.finalText ?? ""),
-  ];
-  return [...new Set(texts.map(normaliseCueText).filter(Boolean))];
-}
+import { cueAudioDir, describerVoiceId, speakableTexts } from "../src/pipeline/demoData";
+import { requireElevenLabsKey, synthesise } from "../src/tts/elevenlabs";
+import { cueAudioKey } from "../src/web/cueAudio";
 
 async function main(): Promise<void> {
   loadLocalEnv();
@@ -66,10 +44,7 @@ async function main(): Promise<void> {
   console.log(`Done: ${rendered} new files, ${characters} characters sent to ElevenLabs (voice ${voiceId}). Next: pnpm export-demo`);
 }
 
-const isDirectRun = process.argv[1]?.endsWith("render-cue-audio.ts");
-if (isDirectRun) {
-  main().catch((error) => {
-    console.error(error instanceof Error ? error.message : error);
-    process.exit(1);
-  });
-}
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

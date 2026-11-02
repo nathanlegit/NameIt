@@ -1,4 +1,5 @@
-// Shared data model. Mirrors PRD Section 9; change both together.
+// Shared data model. Started from PRD Section 9 and has drifted on purpose
+// (additions and removals are logged in docs/DECISIONS.md).
 
 export type Seconds = number;
 
@@ -71,7 +72,7 @@ export interface Keyframe {
 
 export interface MaskEvidence {
   framePath: string;
-  maskPath: string;                // PNG mask, or RLE stored in JSON
+  maskPath: string;                // evidence/<id>.mask.json (RLE + SVG outline), or "" if SAM gave no mask
   box: [number, number, number, number]; // x, y, w, h in pixels
   samScore: number;
   selectionReasons: string[];      // e.g. ["touches hand", "moved during window"]
@@ -93,23 +94,14 @@ export interface Resolution {
   confidenceNotes: string[];       // e.g. ["the two answers disagree"]
 }
 
-export interface OnScreenText {
-  id: string;
-  time: Seconds;
-  text: string;
-  alreadySpoken: boolean;
-}
-
 export interface Cue {
   id: string;
-  sourceType: "reference" | "onscreen_text";
+  sourceType: "reference";        // on-screen text cues (F8, P1) were never built
   sourceId: string;
   start: Seconds;                  // extended: the video pauses here
   shortText: string;
   longText: string;
   delivery: "inline" | "extended";
-  reviewStatus: "draft" | "approved" | "edited" | "rejected";
-  finalText: string | null;
   // Added in M3 (see DECISIONS.md):
   end: Seconds;                    // inline: when speech ends; extended: same as start
   spokenDurationSec: Seconds;

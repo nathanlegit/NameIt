@@ -23,11 +23,3 @@ export function saveLocalReview(videoId: string, review: ReviewState): boolean {
     return false;
   }
 }
-
-export function clearLocalReview(videoId: string): void {
-  try {
-    window.localStorage.removeItem(key(videoId));
-  } catch {
-    // nothing to clear
-  }
-}

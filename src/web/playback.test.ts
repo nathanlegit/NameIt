@@ -7,7 +7,7 @@ import type { Cue } from "../types";
 function cue(overrides: Partial<Cue> = {}): Cue {
   return {
     id: "cue-r", sourceType: "reference", sourceId: "r", start: 5, end: 6, shortText: "Flour.", longText: "A hand tips the flour.",
-    delivery: "inline", reviewStatus: "draft", finalText: null, spokenDurationSec: 0.4, placementReason: "", bucket: "ready", ...overrides,
+    delivery: "inline", spokenDurationSec: 0.4, placementReason: "", bucket: "ready", ...overrides,
   };
 }
 

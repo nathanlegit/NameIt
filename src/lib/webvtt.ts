@@ -6,8 +6,8 @@
 //
 // WebVTT has no way to say "pause the video here", so an extended cue gets a
 // NOTE line and an end time of start + its speaking time, cut short at the
-// next cue so cues never overlap in the file. Our player (F11) reads
-// cues.json, which carries the delivery mode properly.
+// next cue so cues never overlap in the file. Our own player (F11) reads the
+// cues from bundle.json instead, which carries the delivery mode properly.
 
 import type { Seconds } from "../types";
 

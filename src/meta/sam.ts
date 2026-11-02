@@ -6,7 +6,8 @@
 //   cookbook 07_sam/01_api_basics/typescript/sam-api.ts
 //
 // How SAM is called: the Responses API (POST /v1/responses) with model "sam-3.1",
-// one user message holding a short noun phrase plus an image or video.
+// one user message holding a short noun phrase plus a video clip. (SAM also takes
+// images; the M0 spike used that, the pipeline tracks through video instead.)
 // One concept per request: to find "bowl" and "hand", send two requests.
 //
 // How SAM answers: NOT JSON. It streams a compact text grammar with base85 masks.
@@ -14,13 +15,10 @@
 // never parse the grammar ourselves.
 
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   formats,
-  parseImageStream,
   parseVideoStream,
   recordsOfKind,
-  type ImageSegmentationResult,
   type ResponsesEvent,
   type SegmentationMask,
   type SegmentationResult,
@@ -35,66 +33,6 @@ export interface PixelBox {
   top: number;
   right: number;
   bottom: number;
-}
-
-// One object SAM found for one concept in one image.
-export interface SamDetection {
-  concept: string;          // the noun phrase we asked for, e.g. "bowl"
-  objectId: string;         // stable per object; not dense or 0-based
-  box: PixelBox;            // corners, in source-image pixels
-  confidence: number | null; // 0 to 1; null if the API omitted it
-  mask: SegmentationMask | null; // decode with decodeMaskToRaster when needed
-}
-
-// TODO-VERIFY: the cookbook says the API streams `response.content_part.done`
-// but not `response.output_text.done`, which the parser needs to finish a text
-// lane. This shim synthesises the missing event (copied in spirit from the
-// cookbook's normalizedEvents). Check whether parser 0.1.0 still needs it; if
-// SAM results come back empty or "incomplete", this is the first suspect.
-async function* withOutputTextDone(stream: AsyncIterable<unknown>): AsyncIterable<ResponsesEvent> {
-  const finishedLanes = new Set<string>();
-  for await (const raw of stream) {
-    const event = raw as {
-      type?: string;
-      item_id?: unknown;
-      output_index?: unknown;
-      content_index?: unknown;
-      part?: { type?: unknown; text?: unknown } | null;
-    };
-    const laneKey = `${String(event.item_id)}:${String(event.output_index)}:${String(event.content_index)}`;
-
-    if (event.type === "response.output_text.done") {
-      if (!finishedLanes.has(laneKey)) {
-        finishedLanes.add(laneKey);
-        yield event as unknown as ResponsesEvent;
-      }
-      continue;
-    }
-
-    yield event as unknown as ResponsesEvent;
-
-    const isFinishedTextPart =
-      event.type === "response.content_part.done" &&
-      event.part?.type === "output_text" &&
-      typeof event.part.text === "string";
-    if (isFinishedTextPart && !finishedLanes.has(laneKey)) {
-      finishedLanes.add(laneKey);
-      yield {
-        type: "response.output_text.done",
-        item_id: event.item_id,
-        output_index: event.output_index,
-        content_index: event.content_index,
-        text: event.part!.text,
-      } as unknown as ResponsesEvent;
-    }
-  }
-}
-
-function imageMimeType(imagePath: string): string {
-  const extension = path.extname(imagePath).toLowerCase();
-  if (extension === ".png") return "image/png";
-  if (extension === ".webp") return "image/webp";
-  return "image/jpeg";
 }
 
 // Opens a streaming SAM request: one concept phrase plus one media part.
@@ -126,20 +64,6 @@ function assertCompleteResult(result: SegmentationResult): void {
   }
 }
 
-// Segments every instance of `concept` in one image.
-// Pricing: $2.50 per 1,000 images, so each call costs a quarter of a cent.
-export async function segmentImageRaw(
-  imagePath: string,
-  concept: string,
-): Promise<ImageSegmentationResult> {
-  const bytes = await readFile(imagePath);
-  const imageDataUrl = `data:${imageMimeType(imagePath)};base64,${bytes.toString("base64")}`;
-  const stream = await startSamStream(concept, { type: "input_image", image_url: imageDataUrl });
-  const result = await parseImageStream(withOutputTextDone(stream)).finalResult;
-  assertCompleteResult(result);
-  return result;
-}
-
 // Segments and TRACKS every instance of `concept` through a short video clip.
 // Each object keeps the same objectId across frames, which is what lets us
 // measure motion and hand contact over time. The clip is sent inline as a
@@ -152,7 +76,9 @@ export async function segmentVideoRaw(
   const bytes = await readFile(videoPath);
   const videoDataUrl = `data:video/mp4;base64,${bytes.toString("base64")}`;
   const stream = await startSamStream(concept, { type: "input_video", video_url: videoDataUrl });
-  const result = await parseVideoStream(withOutputTextDone(stream)).finalResult;
+  // The stream now ends each text lane with response.output_text.done, so the
+  // parser needs no shim (verified 3 Nov; the cookbook's shim is no longer needed).
+  const result = await parseVideoStream(stream as AsyncIterable<ResponsesEvent>).finalResult;
   assertCompleteResult(result);
   return result;
 }
@@ -174,7 +100,7 @@ export interface TrackedBox {
   mask: SegmentationMask | null;
 }
 
-// One object followed through the clip. An image is a one-frame clip.
+// One object followed through the clip.
 export interface ObjectTrack {
   concept: string;   // the phrase SAM was given
   objectId: string;  // stable across frames within one SAM response
@@ -207,26 +133,5 @@ export function toTracks(result: SegmentationResult, concept: string): ObjectTra
     objectId,
     // Frames can arrive out of order (forward pass, then backward), so sort.
     boxes: boxes.sort((first, second) => first.frameIndex - second.frameIndex),
-  }));
-}
-
-// Pairs each object's box record with its mask record (they share objectId).
-export function toDetections(result: ImageSegmentationResult, concept: string): SamDetection[] {
-  const maskByObjectId = new Map<string, SegmentationMask>();
-  for (const maskRecord of recordsOfKind(result.records, "mask")) {
-    maskByObjectId.set(maskRecord.objectId, maskRecord.mask);
-  }
-
-  return recordsOfKind(result.records, "box").map((boxRecord) => ({
-    concept,
-    objectId: boxRecord.objectId,
-    box: {
-      left: boxRecord.left,
-      top: boxRecord.top,
-      right: boxRecord.right,
-      bottom: boxRecord.bottom,
-    },
-    confidence: boxRecord.confidence ?? null,
-    mask: maskByObjectId.get(boxRecord.objectId) ?? null,
   }));
 }

@@ -4,6 +4,8 @@
 // fire "end" or "error" on a cancelled utterance, and the player must not
 // treat that as "finished, resume the video".
 
+import { speechDurationSec } from "../lib/placement";
+
 export interface SpeechHandle {
   cancel: () => void;
 }
@@ -142,7 +144,6 @@ export function speakCue(text: string, audioUrl: string | null, rate: number, on
 // Silent stand-in when the built-in voice is off (screen reader users): wait
 // roughly as long as the words would take, so extended pauses still happen.
 export function waitForReading(text: string, rate: number, onDone: () => void): SpeechHandle {
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const timer = window.setTimeout(onDone, (words / (2.5 * rate)) * 1000 + 400);
+  const timer = window.setTimeout(onDone, speechDurationSec(text, rate) * 1000 + 400);
   return { cancel: () => window.clearTimeout(timer) };
 }

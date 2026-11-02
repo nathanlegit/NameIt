@@ -63,7 +63,8 @@ export interface SelectionResult {
 
 // How much hand contact matters, by what kind of thing "this" refers to.
 // You hold the spoonful you mean; you rarely hold "right there".
-// All weights here are first guesses, to be tuned on the labelled eval set (M3).
+// All weights here are untuned first guesses (the eval set is too small to tune
+// them without overfitting; see docs/DECISIONS.md).
 export const HAND_WEIGHT_BY_KIND: Record<ReferenceKind, number> = {
   object: 1.0,
   amount: 1.0,

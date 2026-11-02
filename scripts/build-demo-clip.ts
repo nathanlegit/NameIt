@@ -5,7 +5,7 @@
 //   4. places every line at its start time and muxes it onto the video
 // Output: data/spike-input/<name>.mp4
 //
-// Usage: pnpm build-clip clip1
+// Usage: pnpm build-demo-clip clip1
 // Needs ELEVENLABS_API_KEY in .env.local (optional ELEVENLABS_VOICE_ID).
 // Downloads and generated lines are cached, so re-runs only redo what changed.
 //
@@ -13,14 +13,13 @@
 // on the second its object is on screen, and placing separate clips with
 // ffmpeg's adelay is exact. Pause tags in a single recording only approximate it.
 
-import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 
 import { loadLocalEnv } from "../src/meta/client";
-import { probeVideo } from "../src/lib/ffmpeg";
+import { probeDuration, probeVideo, runCommand } from "../src/lib/ffmpeg";
 import { PRESENTER_VOICE_ID, requireElevenLabsKey, synthesise } from "../src/tts/elevenlabs";
 
 interface ClipSpec {
@@ -35,18 +34,6 @@ const OUTPUT_FPS = 25;
 // Pexels serves files to a normal browser user agent; the download URL redirects
 // to videos.pexels.com.
 const BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36";
-
-function run(command: string, args: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: ["ignore", "inherit", "pipe"] });
-    let stderr = "";
-    child.stderr.on("data", (chunk) => (stderr += chunk));
-    child.on("error", reject);
-    child.on("close", (code) =>
-      code === 0 ? resolve() : reject(new Error(`${command} exited with ${code}:\n${stderr.slice(-1500)}`)),
-    );
-  });
-}
 
 async function downloadPexelsVideo(pexelsId: number, outputPath: string): Promise<void> {
   if (existsSync(outputPath)) return;
@@ -73,7 +60,7 @@ async function joinSources(sourcePaths: string[], outputPath: string): Promise<v
   const concatInputs = sourcePaths.map((_, index) => `[v${index}]`).join("");
   const filterGraph = [...perSourceFilters, `${concatInputs}concat=n=${sourcePaths.length}:v=1:a=0[video]`].join(";");
 
-  await run("ffmpeg", [
+  await runCommand("ffmpeg", [
     "-y", "-loglevel", "error",
     ...sourcePaths.flatMap((sourcePath) => ["-i", sourcePath]),
     "-filter_complex", filterGraph,
@@ -104,20 +91,10 @@ async function generateLines(spec: ClipSpec, linesDir: string): Promise<PlacedLi
       console.log(`  TTS ${index}: "${line.text}"`);
       await writeFile(audioPath, await synthesise(line.text, voiceId, apiKey));
     }
-    const { durationSec } = await probeAudioDuration(audioPath);
+    const durationSec = await probeDuration(audioPath);
     placed.push({ start: line.start, text: line.text, audioPath, durationSec });
   }
   return placed;
-}
-
-async function probeAudioDuration(audioPath: string): Promise<{ durationSec: number }> {
-  return new Promise((resolve, reject) => {
-    const child = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", audioPath]);
-    let output = "";
-    child.stdout.on("data", (chunk) => (output += chunk));
-    child.on("error", reject);
-    child.on("close", () => resolve({ durationSec: Number(output.trim()) }));
-  });
 }
 
 // A line that runs into the next one would garble both, and a gap under about
@@ -150,7 +127,7 @@ async function muxNarration(videoPath: string, lines: PlacedLine[], durationSec:
     `${mixInputs}amix=inputs=${lines.length}:duration=longest:normalize=0,apad[narration]`,
   ].join(";");
 
-  await run("ffmpeg", [
+  await runCommand("ffmpeg", [
     "-y", "-loglevel", "error",
     "-i", videoPath,
     ...lines.flatMap((line) => ["-i", line.audioPath]),
@@ -164,7 +141,7 @@ async function muxNarration(videoPath: string, lines: PlacedLine[], durationSec:
 
 async function main(): Promise<void> {
   const clipName = process.argv[2];
-  if (!clipName) throw new Error("Usage: pnpm build-clip <name>   (reads scripts/demo-clips/<name>.json)");
+  if (!clipName) throw new Error("Usage: pnpm build-demo-clip <name>   (reads scripts/demo-clips/<name>.json)");
   loadLocalEnv();
 
   const spec = JSON.parse(await readFile(path.join("scripts", "demo-clips", `${clipName}.json`), "utf8")) as ClipSpec;

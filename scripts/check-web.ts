@@ -13,6 +13,7 @@ import { existsSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import puppeteer, { type Page } from "puppeteer-core";
+import { videoPaths } from "../src/pipeline/store";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3123";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -77,7 +78,7 @@ async function axeScan(page: Page, url: string, scheme: "light" | "dark"): Promi
 }
 
 async function main(): Promise<void> {
-  const reviewPath = path.join("data", "videos", VIDEO_ID, "review.json");
+  const reviewPath = videoPaths(VIDEO_ID).review;
   if (IS_LOCAL && existsSync(reviewPath)) throw new Error(`${reviewPath} exists; this check would overwrite a real review. Move it first.`);
 
   const browser = await puppeteer.launch({
@@ -171,7 +172,7 @@ async function main(): Promise<void> {
     // Leave no test review behind.
     if (IS_LOCAL) {
       await rm(reviewPath, { force: true });
-      await rm(path.join("data", "videos", VIDEO_ID, "edits.json"), { force: true });
+      await rm(videoPaths(VIDEO_ID).edits, { force: true });
     }
   }
 

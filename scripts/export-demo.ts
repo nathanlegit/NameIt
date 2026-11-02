@@ -8,36 +8,26 @@
 // Usage: pnpm export-demo [videoId ...]   (default: every video in the eval test set)
 // Re-run after the pipeline or a review changes; the video is only re-encoded if missing.
 
-import { spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { readJson, writeJson } from "../src/lib/cache";
+import { runCommand } from "../src/lib/ffmpeg";
 import { TEST_SET } from "../src/eval/testSet";
 import type { GroundingRecord, MaskFile } from "../src/pipeline/06_ground";
 import { frameSize, readVideoMeta, videoPaths } from "../src/pipeline/store";
 import type { Cue, LocalisedReference, ReferenceCandidate, Resolution, Turn } from "../src/types";
 import { cueAudioKey } from "../src/web/cueAudio";
-import { cueAudioDir, speakableTexts } from "./render-cue-audio";
-import { EMPTY_REVIEW, type BundleItem, type ReviewState, type Split, type VideoBundle, type VideoSummary } from "../src/web/bundle";
+import { cueAudioDir, readReviewState, speakableTexts } from "../src/pipeline/demoData";
+import type { BundleItem, Split, VideoBundle, VideoSummary } from "../src/web/bundle";
 
 const DEMO_ROOT = path.join("public", "demo");
 const EVAL_JSON = path.join("data", "eval", "latest.json");
 
-function run(command: string, args: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { stdio: ["ignore", "ignore", "pipe"] });
-    let stderr = "";
-    child.stderr.on("data", (chunk) => (stderr += chunk));
-    child.on("error", reject);
-    child.on("close", (code) => (code === 0 ? resolve() : reject(new Error(`${command} exited with ${code}:\n${stderr.slice(-1000)}`))));
-  });
-}
-
 // 720p H.264 + AAC with the index at the front (+faststart), so browsers can
 // start playing and seeking before the whole file has downloaded.
 async function encodeWebVideo(sourcePath: string, outputPath: string): Promise<void> {
-  await run("ffmpeg", [
+  await runCommand("ffmpeg", [
     "-y", "-loglevel", "error",
     "-i", sourcePath,
     "-vf", "scale='min(1280,iw)':-2",
@@ -46,11 +36,6 @@ async function encodeWebVideo(sourcePath: string, outputPath: string): Promise<v
     "-movflags", "+faststart",
     outputPath,
   ]);
-}
-
-export async function readReviewState(videoId: string): Promise<ReviewState> {
-  const reviewPath = path.join(videoPaths(videoId).dir, "review.json");
-  return existsSync(reviewPath) ? readJson<ReviewState>(reviewPath) : EMPTY_REVIEW;
 }
 
 async function exportVideo(videoId: string, split: Split): Promise<VideoSummary> {
@@ -209,10 +194,7 @@ async function main(): Promise<void> {
   console.log(`Wrote ${index.length} videos to ${DEMO_ROOT}/`);
 }
 
-const isDirectRun = process.argv[1]?.endsWith("export-demo.ts");
-if (isDirectRun) {
-  main().catch((error) => {
-    console.error(error instanceof Error ? error.message : error);
-    process.exit(1);
-  });
-}
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

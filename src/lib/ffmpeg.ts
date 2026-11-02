@@ -7,7 +7,7 @@ import { mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { PixelBox } from "../meta/sam";
 
-function runCommand(command: string, args: string[]): Promise<string> {
+export function runCommand(command: string, args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args);
     let stdout = "";
@@ -129,6 +129,12 @@ export interface ProbedVideo {
   hasAudio: boolean;
 }
 
+// Duration of any media file in seconds (audio or video).
+export async function probeDuration(mediaPath: string): Promise<number> {
+  const output = await runCommand("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", mediaPath]);
+  return Number(output.trim());
+}
+
 export async function probeVideo(videoPath: string): Promise<ProbedVideo> {
   const output = await runCommand("ffprobe", [
     "-v", "error",
@@ -227,8 +233,9 @@ export interface BoxToDraw {
   thickness: number;
 }
 
-// Draws rectangles on a frame so a person can see what SAM found.
-// The review UI (M4) will draw real masks on a canvas; boxes are enough for the spike.
+// Draws rectangles on a frame so a person can see what SAM found: the evidence
+// overlay JPEG (green = chosen, yellow = hands, red = others). Spark looks at it
+// in stage 07; the review UI draws the real mask outline as SVG instead.
 export async function drawBoxesOnImage(
   inputImagePath: string,
   outputImagePath: string,

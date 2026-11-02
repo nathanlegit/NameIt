@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { EvalItem, SplitMetrics, SystemMetrics } from "@/src/eval/metrics";
+import { percent, type EvalItem, type SplitMetrics, type SystemMetrics } from "@/src/eval/metrics";
 import type { BundleItem, VideoBundle } from "@/src/web/bundle";
 import { loadBundle, loadEval } from "@/src/web/loadBundle";
 import { excerptAround } from "@/src/web/text";
@@ -18,10 +18,6 @@ const SPLIT_TITLE: Record<string, string> = {
   scripted: "Scripted clips · used for tuning",
   all: "All clips",
 };
-
-function percent(value: number | null): string {
-  return value === null ? "–" : `${Math.round(value * 100)}%`;
-}
 
 // Which column did better on a metric? Compared on the rounded percentages the
 // table shows, so a visible tie (16% vs 16%) is never highlighted as a win.

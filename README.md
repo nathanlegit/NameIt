@@ -96,16 +96,13 @@ pnpm install
 cp .env.example .env.local
 ```
 
-Then fill in `.env.local`:
-
-- `MODEL_API_KEY`: from https://dev.meta.ai
-- `ELEVENLABS_API_KEY`: optional
+Then fill in `.env.local`: `MODEL_API_KEY` from https://dev.meta.ai, and optionally `ELEVENLABS_API_KEY`. The other settings in `.env.example` are explained there and have defaults.
 
 Process a video and open the app:
 
 ```bash
 pnpm add-video my-video.mp4 my-video --domain cooking
-pnpm run pipeline my-video        # stages 01 to 09
+pnpm run-pipeline my-video        # the 8 stages, 01 to 09
 pnpm render-cue-audio my-video    # optional: ElevenLabs description voice
 pnpm export-demo my-video         # copy it into the web app
 pnpm dev                          # http://localhost:3000
@@ -117,9 +114,11 @@ pnpm dev                          # http://localhost:3000
 pnpm test                          # unit tests
 pnpm typecheck
 pnpm eval                          # run the evaluation, writes docs/EVAL.md
-pnpm run pipeline <id> --from 05   # re-run from a stage (cached calls are free)
-pnpm build-clip clip1              # build a narrated demo clip from scripts/demo-clips/
+pnpm run-pipeline <id> --from 05   # re-run from a stage (cached calls are free)
+pnpm build-demo-clip clip1         # build a narrated demo clip from scripts/demo-clips/
+pnpm build && pnpm start:check     # the built app on port 3123, for the next two
 pnpm check-web                     # accessibility scan + player and review checks in Chrome
+pnpm screenshots                   # regenerate docs/screenshots
 ```
 
 ## Deploying
@@ -155,18 +154,21 @@ Everything here was built for the Meta Global AI Developer Hackathon, from 30 Oc
 - *VideoA11y: Method and Dataset for Accessible Video Description*, 2025
 - DCMP, *Description Key*
 
-Links and the rest are in [PRD.md](PRD.md), section 19.
+Links and the rest are in the [PRD](docs/PRD.md), section 19.
 
 ## Project layout
 
 ```
-src/pipeline/   the 9 stages and the CLI
+src/pipeline/   the 8 stages, the CLI, and the per-video file layout
 src/meta/       Meta Model API adapters (Spark, SAM, Transcribe)
-src/lib/        pure logic: placement, mask selection, confidence (unit tested)
+src/prompts/    one file per Muse Spark prompt, with its output schema
+src/tts/        the ElevenLabs adapter
+src/lib/        pure logic: placement, mask selection, confidence, gaps (unit tested)
 src/eval/       labels, matching, metrics, the eval runner
+src/web/        what the web app shares: bundle format, playback and review logic, speech
 app/            Next.js app: video list, review, player, evaluation
-scripts/        demo clip builder, export, deploy, description voice
-docs/           decisions log, eval results, screenshots
+scripts/        demo clips, export, description voice, browser checks, screenshots, deploy
+docs/           the PRD, decisions log, eval results, demo script, screenshots
 ```
 
 ## Credits

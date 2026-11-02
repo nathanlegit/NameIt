@@ -21,6 +21,43 @@ Checked against dev.meta.ai docs (quickstart, models, api-reference/voice, sam/*
 Still TODO-VERIFY (will confirm on the first live run):
 - Whether `@meta-sam/parser` 0.1.0 still needs the cookbook's shim that synthesises `response.output_text.done`. Kept for now in `src/meta/sam.ts`; it is harmless if the event already arrives.
 
+## 3 Nov 2026: cleanup pass
+
+Dead code and leftovers removed, no behaviour change to the pipeline:
+- **SAM: the image path and the stream shim are gone.** `segmentImageRaw`, `toDetections` and `SamDetection` were used only by the M0 spike. The `withOutputTextDone` shim (TODO-VERIFY in the API-shapes entry above) is no longer needed: a live call on 3 Nov without it returned `response.output_text.done` itself, and the parse completed with 60 records and no errors. That settles the TODO.
+- **`spike/` is gone.** `m0-spike.ts` (the M0 gate), probes and one-off helpers were deleted. `readme-screenshots.ts` became `scripts/screenshots.ts` (`pnpm screenshots`), and `save-sam-fixture.ts` moved to `scripts/` because it records where the SAM fixture came from.
+- **Types:** `OnScreenText` and the `onscreen_text` cue type removed (F8 was never built). `Cue.reviewStatus` and `Cue.finalText` removed: they were always "draft"/null, and review state lives in `ReviewState` (`review.json`). `transcribe.ts` `toTurns` removed (spike-only), and its default mode is now ENDPOINTING, the mode the pipeline uses.
+- **Shared helpers instead of copies:**
+  - `src/web/time.ts` (clock formatting; this fixed "1:60" for durations like 119.6 s)
+  - `src/lib/videoId.ts`
+  - `percent()` in `src/eval/metrics.ts`
+  - one `runCommand` and `probeDuration` in `src/lib/ffmpeg.ts`
+  - `videoPaths().review` and `.edits`
+  - `src/pipeline/demoData.ts`, which ends a circular import between `export-demo.ts` and `render-cue-audio.ts`
+- **Scripts renamed:**
+  - `pnpm run-pipeline`, so the M1 note about writing `pnpm run pipeline` no longer applies
+  - `pnpm build-demo-clip`
+  - new: `pnpm start:check` (port 3123, for `check-web` and `screenshots`) and `pnpm screenshots`
+- **Config:**
+  - `@types/node` ^24 to match `engines.node` 24.x
+  - `packageManager: pnpm@12.16.1`
+  - tsconfig: `allowJs` dropped, `next.config.ts` checked
+  - `.env.example` lists every variable the code reads
+  - `.vercelignore` reworded as a safety net, since deploys are prebuilt
+  - `PRD.md` moved to `docs/PRD.md`
+
+Earlier entries corrected (kept as history, superseded here):
+- The API-shapes entry says SAM video "needs a Files API upload". It doesn't: the clip is sent inline as base64, as the M2 entry says.
+- The F11b entry calls the Alice voice id TODO-VERIFY. It was verified on 2 Nov.
+- The M4 entry says the site is deployed with `vercel deploy` and that `.vercelignore` keeps `data/` out. It is deployed prebuilt (`pnpm deploy-demo`).
+- The M4 entry says the `pnpm-workspace.yaml` exception file was deleted. That's true, but the file came back on 2 Nov holding only `allowBuilds: esbuild: false`.
+- The M4 entry says pre-rendered ElevenLabs cue audio wasn't built. It was built the same day (F11b).
+- The M4 entry says no upload page was built. Still true; the stale code comment promising one is gone.
+
+## 2 Nov 2026: demo video voice-over
+
+Nathan records the demo voice-over himself. This reverses the 30 Oct constraint (PRD 14.3, "Nathan's own voice does not appear"), because his own voice is more authentic. The demo clips' presenter (George) and the description voice (Alice) stay synthetic and are disclosed on the end card. Script: `docs/DEMO_SCRIPT.md`.
+
 ## 2 Nov 2026: extended cues in very long turns
 
 **Problem (seen while taking README screenshots of held-meat):** an extended cue paused the video at the end of its sentence. With a presenter who barely pauses, the "sentence" was a 141 s turn, so 11 descriptions all fired together at 2:21 and 8 more at the very end, up to two minutes after the word they explain.

@@ -1,5 +1,5 @@
 // README screenshots -> docs/screenshots/*.jpg (server on port 3123).
-//   pnpm tsx spike/readme-screenshots.ts
+//   pnpm screenshots        (needs the app on port 3123: pnpm build && pnpm start:check)
 // Footage in the shots is from the public-domain Prelinger films where possible.
 
 import { mkdirSync } from "node:fs";

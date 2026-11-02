@@ -6,7 +6,7 @@
 //              prompts or thresholds. These are the headline numbers.
 //
 // Each video needs src/eval/labels/<videoId>.json and a processed
-// data/videos/<videoId>/ (pnpm run pipeline <videoId>).
+// data/videos/<videoId>/ (pnpm run-pipeline <videoId>).
 
 export type Split = "scripted" | "held_out";
 

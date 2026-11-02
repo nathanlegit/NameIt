@@ -25,7 +25,7 @@ import { BaselineResolveSchema, baselineResolveSystem, buildBaselineResolvePromp
 import { buildJudgeResolutionPrompt, JudgeResolutionSchema } from "../prompts/judgeResolution";
 import type { Cue, EvalReferenceLabel, LocalisedReference, ReferenceCandidate, Resolution, Turn } from "../types";
 import { matchLabels, type TimedPrediction } from "./match";
-import { computeSplitMetrics, type EvalItem, type SplitMetrics, type SystemAnswer, type VideoTiming } from "./metrics";
+import { computeSplitMetrics, percent, type EvalItem, type SplitMetrics, type SystemAnswer, type VideoTiming } from "./metrics";
 import { TEST_SET, type Split } from "./testSet";
 
 const EVAL_CONCURRENCY = 8;
@@ -203,10 +203,6 @@ async function evaluateVideo(videoId: string, split: Split, overrides: JudgeOver
 // ---------------------------------------------------------------------------
 // Report
 // ---------------------------------------------------------------------------
-
-function percent(value: number | null): string {
-  return value === null ? "–" : `${Math.round(value * 100)}%`;
-}
 
 function perMinute(value: number | null): string {
   return value === null ? "–" : value.toFixed(1);

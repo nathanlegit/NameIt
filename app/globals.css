@@ -118,7 +118,7 @@ main > * { animation: ni-in .4s ease both; }
 .section-head.small h2 { font-size: 22px; }
 .meta { font: 500 13px var(--mono); color: var(--muted); }
 .lede { margin: 0; font: 400 17px/1.55 var(--body); color: var(--ink-2); max-width: 70ch; text-wrap: pretty; }
-.muted { color: var(--muted); }
+
 .notice { margin: 0 0 10px; font: 400 13px/1.45 var(--body); color: var(--muted); }
 .shortcuts { margin: 0; font: 400 13px/2 var(--mono); color: var(--muted); }
 kbd, .key { font: 500 11px var(--mono); opacity: .75; }

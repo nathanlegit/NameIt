@@ -4,6 +4,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isValidVideoId } from "../lib/videoId";
 import type { VideoBundle, VideoSummary } from "./bundle";
 
 const DEMO_ROOT = path.join(process.cwd(), "public", "demo");
@@ -16,7 +17,7 @@ export async function loadIndex(): Promise<VideoSummary[]> {
 
 export async function loadBundle(videoId: string): Promise<VideoBundle | null> {
   // Ids come from the URL: only allow the same simple ids the pipeline does.
-  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(videoId)) return null;
+  if (!isValidVideoId(videoId)) return null;
   const bundlePath = path.join(DEMO_ROOT, videoId, "bundle.json");
   if (!existsSync(bundlePath)) return null;
   return JSON.parse(await readFile(bundlePath, "utf8")) as VideoBundle;

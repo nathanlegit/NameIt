@@ -13,7 +13,6 @@
 
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
-import type { Turn } from "../types";
 import { getBaseUrl, requireApiKey } from "./client";
 
 const TRANSCRIBE_MODEL = "muse-voice-transcribe-1.0";
@@ -41,7 +40,7 @@ export type TranscribeMode = "DIARIZATION" | "ENDPOINTING";
 
 export interface TranscribeOptions {
   keywords?: string[]; // biasing terms, e.g. ["whisk", "ramekin"]. Not a guarantee of spelling.
-  mode?: TranscribeMode; // default DIARIZATION
+  mode?: TranscribeMode; // default ENDPOINTING, what the pipeline uses (DIARIZATION returned one turn: DECISIONS.md)
 }
 
 export async function transcribeWav(
@@ -53,7 +52,7 @@ export async function transcribeWav(
   const requestSettings: Record<string, unknown> = {
     model: TRANSCRIBE_MODEL,
     audioEncoding: "WAV",
-    mode: options.mode ?? "DIARIZATION",
+    mode: options.mode ?? "ENDPOINTING",
   };
   if (options.keywords && options.keywords.length > 0) {
     requestSettings.keywords = options.keywords;
@@ -83,15 +82,4 @@ export async function transcribeWav(
 
   const json: unknown = await response.json();
   return TranscribeResponseSchema.parse(json);
-}
-
-// Converts the API's millisecond turns into our own Turn shape (seconds).
-export function toTurns(response: TranscribeResponse): Turn[] {
-  return response.turns.map((apiTurn) => ({
-    id: `t${apiTurn.turnId}`,
-    speaker: apiTurn.speaker ?? "unknown",
-    start: apiTurn.startMs / 1000,
-    end: apiTurn.endMs / 1000,
-    text: apiTurn.transcript,
-  }));
 }
