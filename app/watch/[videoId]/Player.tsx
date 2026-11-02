@@ -11,8 +11,8 @@
 // Each cue is also written to an aria-live region, for screen readers and
 // Braille displays.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { VideoBundle } from "@/src/web/bundle";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { BundleItem, VideoBundle } from "@/src/web/bundle";
 import { loadLocalReview } from "@/src/web/localReview";
 import {
   cuesCrossed,
@@ -34,6 +34,74 @@ const SEEK_STEP_SEC = 5;
 const DEFAULT_RATE = 1.1;
 const SCRIPT_LEAD_IN_SEC = 1.5; // clicking a script line starts a little before the cue
 
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Cue markers on the seek bar. Memoised: they only change when the cue list does,
+// not every second while the video plays.
+const Markers = memo(function Markers({ cues, durationSec }: { cues: PlayableCue[]; durationSec: number }) {
+  return (
+    <>
+      {cues.map((cue) => (
+        <span key={cue.id} className="marker" style={{ left: `${(cue.start / durationSec) * 100}%` }} aria-hidden="true" />
+      ))}
+    </>
+  );
+});
+
+interface ScriptRow {
+  cue: PlayableCue;
+  excerpt: ReturnType<typeof excerptAround> | null;
+}
+
+// The script beside the player. Keeps the current description in view by
+// scrolling the list itself (never the page, never focus), and not while the
+// viewer's pointer or keyboard focus is in the list.
+const ScriptList = memo(function ScriptList({
+  rows,
+  activeId,
+  onSeek,
+}: {
+  rows: ScriptRow[];
+  activeId: string | null;
+  onSeek: (time: number) => void;
+}) {
+  const listRef = useRef<HTMLOListElement>(null);
+  const pointerInside = useRef(false);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || !activeId || pointerInside.current || list.contains(document.activeElement)) return;
+    const row = list.querySelector<HTMLElement>(`[data-cue-id="${CSS.escape(activeId)}"]`);
+    if (!row) return;
+    const above = row.offsetTop < list.scrollTop;
+    const below = row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight;
+    if (!above && !below) return;
+    const top = Math.max(0, row.offsetTop - (list.clientHeight - row.offsetHeight) / 2);
+    list.scrollTo({ top, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+  }, [activeId]);
+
+  return (
+    <ol
+      ref={listRef}
+      className="script"
+      aria-label="Descriptions in this video"
+      onPointerEnter={() => { pointerInside.current = true; }}
+      onPointerLeave={() => { pointerInside.current = false; }}
+    >
+      {rows.map(({ cue, excerpt }) => (
+        <li key={cue.id} data-cue-id={cue.id}>
+          <button type="button" className={activeId === cue.id ? "active" : undefined} onClick={() => onSeek(cue.start - SCRIPT_LEAD_IN_SEC)}>
+            <span className="time"><span className="visually-hidden">Go to </span>{formatClock(cue.start)}</span>
+            <span className="said">{excerpt ? <>{excerpt.before}<mark>{excerpt.phrase}</mark>{excerpt.after}</> : null}</span>
+            <span className="cue">→ {cue.text}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+  );
+});
+
 export function Player({ bundle }: { bundle: VideoBundle }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -46,6 +114,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
   const [holding, setHolding] = useState(false);   // paused for a description right now
   const [time, setTime] = useState(0);
   const [activeCue, setActiveCue] = useState<PlayableCue | null>(null);
+  const [announceCount, setAnnounceCount] = useState(0); // bumps on every cue, so a repeat re-announces
   const [status, setStatus] = useState("");        // control feedback, announced politely
 
   // Reviews made in this browser (demo mode) win over the exported ones.
@@ -57,6 +126,14 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
 
   const cues = useMemo(() => playableCues(bundle.items, review, mode), [bundle.items, review, mode]);
   const itemById = useMemo(() => new Map(bundle.items.map((item) => [item.referenceId, item])), [bundle.items]);
+  const scriptRows = useMemo<ScriptRow[]>(
+    () =>
+      cues.map((cue) => {
+        const item: BundleItem | undefined = itemById.get(cue.referenceId);
+        return { cue, excerpt: item ? excerptAround(item.sentence.text, item.sentence.phraseOffset, item.phrase.length, 60) : null };
+      }),
+    [cues, itemById],
+  );
 
   // The animation-frame loop reads these refs, so it always sees current values.
   const cuesRef = useRef(cues);
@@ -69,6 +146,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
   useEffect(() => { rateRef.current = rate; }, [rate]);
 
   const lastTimeRef = useRef(0);
+  const seekTrackRef = useRef<HTMLDivElement>(null); // the fill reads --p from here, set every frame
   const speakingRef = useRef<SpeechHandle | null>(null);
   const queueRef = useRef<PlayableCue[]>([]);
   const pausedForDescriptionRef = useRef(false);
@@ -123,6 +201,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     }
     lastCueRef.current = cue;
     setActiveCue(cue);
+    setAnnounceCount((count) => count + 1);
     if (cue.delivery === "extended") {
       setPausedForDescription(true);
       video.pause();
@@ -138,10 +217,12 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
   useEffect(() => { startCueRef.current = startCue; }, [startCue]);
 
   // The scheduler loop.
+  // The progress fill moves every frame through a CSS variable (no React render);
+  // React re-renders once a second, when the clock text changes.
   useEffect(() => {
     let frame = 0;
-    let lastUiUpdate = 0;
-    const tick = (now: number) => {
+    let shownSecond = -1;
+    const tick = () => {
       const video = videoRef.current;
       if (video) {
         const current = video.currentTime;
@@ -157,8 +238,9 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
           }
         }
         lastTimeRef.current = current;
-        if (now - lastUiUpdate > 250) {
-          lastUiUpdate = now;
+        seekTrackRef.current?.style.setProperty("--p", String(bundle.durationSec > 0 ? current / bundle.durationSec : 0));
+        if (Math.floor(current) !== shownSecond) {
+          shownSecond = Math.floor(current);
           setTime(current);
         }
       }
@@ -166,7 +248,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [startCue]);
+  }, [bundle.durationSec, startCue]);
 
   useEffect(() => () => stopDescription(), [stopDescription]);
 
@@ -190,6 +272,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     const video = videoRef.current;
     if (!video) return;
     video.currentTime = Math.min(Math.max(0, target), bundle.durationSec);
+    seekTrackRef.current?.style.setProperty("--p", String(video.currentTime / bundle.durationSec));
     setTime(video.currentTime);
   }, [bundle.durationSec]);
 
@@ -212,34 +295,33 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
       setPausedForDescription(true);
       video.pause();
     }
-    setActiveCue(null);
-    window.setTimeout(() => setActiveCue(cue), 50); // re-announce even if the text is unchanged
+    setActiveCue(cue);
+    setAnnounceCount((count) => count + 1); // a new node in the live region, so it is announced again
     speakingRef.current = voiceOnRef.current
       ? speakCue(cue.text, audioUrlFor(cue.text), rateRef.current, finishCue)
       : waitForReading(cue.text, rateRef.current, finishCue);
   }, [audioUrlFor, finishCue, stopDescription]);
 
   const changeRate = useCallback((direction: 1 | -1) => {
-    setRate((current) => {
-      const next = stepRate(current, direction);
-      setStatus(`Description speed ${next.toFixed(1)}`);
-      return next;
-    });
+    const next = stepRate(rateRef.current, direction);
+    rateRef.current = next;
+    setRate(next);
+    setStatus(`Description speed ${next.toFixed(1)}`);
   }, []);
 
   const toggleDescriptions = useCallback(() => {
-    setDescriptionsOn((current) => {
-      if (current) {
-        const wasWaiting = pausedForDescriptionRef.current;
-        stopDescription();
-        if (wasWaiting) {
-          setPausedForDescription(false);
-          void videoRef.current?.play();
-        }
+    const wasOn = descriptionsOnRef.current;
+    if (wasOn) {
+      const wasWaiting = pausedForDescriptionRef.current;
+      stopDescription();
+      if (wasWaiting) {
+        setPausedForDescription(false);
+        void videoRef.current?.play();
       }
-      setStatus(current ? "Descriptions off" : "Descriptions on");
-      return !current;
-    });
+    }
+    descriptionsOnRef.current = !wasOn;
+    setDescriptionsOn(!wasOn);
+    setStatus(wasOn ? "Descriptions off" : "Descriptions on");
   }, [stopDescription]);
 
   // Keyboard: Space play/pause, D repeat, M descriptions on/off, [ ] speed, ← → seek 5 s.
@@ -269,8 +351,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [changeRate, repeatLast, seekBy, toggleDescriptions, togglePlay]);
 
-  const reviewedCount = cues.filter((cue) => cue.reviewed).length;
-  const progressPercent = bundle.durationSec > 0 ? (time / bundle.durationSec) * 100 : 0;
+  const reviewedCount = useMemo(() => cues.filter((cue) => cue.reviewed).length, [cues]);
   const descriptionText = !descriptionsOn
     ? "Descriptions are off. Press M to turn them back on."
     : activeCue?.text ?? "Press play. Descriptions appear here and are spoken in the pauses.";
@@ -298,26 +379,29 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
             onSeeked={() => { lastTimeRef.current = videoRef.current?.currentTime ?? 0; }}
             onClick={togglePlay}
           />
-          {!playing && <div className="play-overlay" aria-hidden="true"><span /></div>}
-          {holding && <span className="holding-badge" aria-hidden="true">Paused for description</span>}
+          {/* Always rendered and faded in and out, so they never pop. Both are visual only. */}
+          <div className={`play-overlay${playing ? "" : " show"}`} aria-hidden="true"><span /></div>
+          <span className={`holding-badge${holding ? " show" : ""}`} aria-hidden="true">Paused for description</span>
         </div>
 
         <div className="desc-panel">
           <span className="tag" aria-hidden="true">{formatClock(activeCue ? activeCue.start : time)}</span>
           {/* The live region: every spoken description is also announced to screen readers and Braille displays. */}
+          {/* The outer element stays mounted; each description is a new inner node that fades in.
+              Its text is in the DOM at once, so announcements are never delayed. */}
           <span className={`text${activeCue && descriptionsOn ? "" : " idle"}`} aria-live="polite" aria-atomic="true">
-            {descriptionText}
+            <span key={activeCue && descriptionsOn ? `${activeCue.id}-${announceCount}` : "idle"} className="fade-in">
+              {descriptionText}
+            </span>
           </span>
         </div>
 
         <div className="seek">
           <span className="time" aria-hidden="true">{formatClock(time)}</span>
-          <div className="seek-track">
+          <div className="seek-track" ref={seekTrackRef}>
             <div className="rail" />
-            <div className="fill" style={{ width: `${progressPercent}%` }} />
-            {cues.map((cue) => (
-              <span key={cue.id} className="marker" style={{ left: `${(cue.start / bundle.durationSec) * 100}%` }} aria-hidden="true" />
-            ))}
+            <div className="fill" />
+            <Markers cues={cues} durationSec={bundle.durationSec} />
             <input
               type="range"
               min={0}
@@ -357,27 +441,7 @@ export function Player({ bundle }: { bundle: VideoBundle }) {
             <h2>Script</h2>
             <span className="meta">{cues.length} play · {reviewedCount} reviewed</span>
           </div>
-          <ol className="script" aria-label="Descriptions in this video">
-            {cues.map((cue) => {
-              const item = itemById.get(cue.referenceId);
-              const excerpt = item ? excerptAround(item.sentence.text, item.sentence.phraseOffset, item.phrase.length, 60) : null;
-              return (
-                <li key={cue.id}>
-                  <button
-                    type="button"
-                    className={activeCue?.id === cue.id ? "active" : undefined}
-                    onClick={() => seekTo(cue.start - SCRIPT_LEAD_IN_SEC)}
-                  >
-                    <span className="time"><span className="visually-hidden">Go to </span>{formatClock(cue.start)}</span>
-                    <span className="said">
-                      {excerpt ? <>{excerpt.before}<mark>{excerpt.phrase}</mark>{excerpt.after}</> : null}
-                    </span>
-                    <span className="cue">→ {cue.text}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
+          <ScriptList rows={scriptRows} activeId={activeCue?.id ?? null} onSeek={seekTo} />
         </div>
 
         <fieldset className="options">

@@ -46,7 +46,10 @@ function MetricsTable({ metrics }: { metrics: SplitMetrics }) {
   // The abstention target is a range, so neither direction is "better": no highlight.
   rows[rows.length - 1]!.win = null;
 
+  // A labelled, focusable scroll region: on a phone the table scrolls sideways
+  // inside it (keyboard users can scroll it too) instead of widening the page.
   return (
+    <div className="table-scroll" role="region" tabIndex={0} aria-label={`${SPLIT_TITLE[metrics.split]}: results table`}>
     <table className="metrics">
       <caption className="visually-hidden">{SPLIT_TITLE[metrics.split]}</caption>
       <thead>
@@ -79,6 +82,7 @@ function MetricsTable({ metrics }: { metrics: SplitMetrics }) {
         </tr>
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -155,7 +159,7 @@ export default async function EvalPage() {
                 <article className="example" key={example.heading}>
                   <h3>{example.heading}</h3>
                   <p className="context">{example.explanation}</p>
-                  <EvidenceView item={example.bundleItem} frameSize={example.bundle.frameSize} showRejected={false} />
+                  <EvidenceView item={example.bundleItem} frameSize={example.bundle.frameSize} showRejected={false} lazy />
                   <p className="said">“{excerpt.before}<mark>{excerpt.phrase}</mark>{excerpt.after}”</p>
                   <dl className="facts">
                     <dt>Label</dt><dd>{example.evalItem.trueReferent}</dd>

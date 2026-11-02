@@ -50,7 +50,7 @@ export default async function HomePage() {
                 <div className="main">
                   <span className="num" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
                   <div className="thumb">
-                    {video.thumbUrl ? <img src={video.thumbUrl} alt="" /> : <div className="placeholder" />}
+                    {video.thumbUrl ? <img src={video.thumbUrl} alt="" loading="lazy" decoding="async" /> : <div className="placeholder" />}
                     <span className="duration"><span className="visually-hidden">Length </span>{formatClock(video.durationSec)}</span>
                   </div>
                   <div style={{ minWidth: 0 }}>

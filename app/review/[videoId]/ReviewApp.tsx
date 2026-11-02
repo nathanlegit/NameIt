@@ -78,6 +78,7 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
   const [saveState, setSaveState] = useState<"saved" | "saving" | "error" | "local">(canSave ? "saved" : "local");
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const listRef = useRef<HTMLOListElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const clipEndRef = useRef<number | null>(null);
   const previewRef = useRef<SpeechHandle | null>(null);
@@ -102,26 +103,48 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
       clipEndRef.current = null;
       video.currentTime = Math.max(0, item.refinedTime - CLIP_HALF_SEC);
     }
+    // Preload the neighbours' evidence frames, so J and K show the new frame at once.
+    for (const neighbour of [items[index - 1], items[index + 1]]) {
+      if (neighbour?.evidence) new Image().src = neighbour.evidence.frameUrl;
+    }
+    // Keep the current item visible in the list (scrolls the list only, never the page or focus).
+    const list = listRef.current;
+    const row = list?.children[index] as HTMLElement | undefined;
+    if (list && row) {
+      const above = row.offsetTop < list.scrollTop;
+      const below = row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight;
+      if (above || below) {
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        list.scrollTo({ top: Math.max(0, row.offsetTop - list.clientHeight / 3), behavior: reduced ? "auto" : "smooth" });
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
 
+  // Saves are fast, so "Saving…" only shows if one takes longer than 300 ms
+  // (no flicker on every keypress), and only the latest save decides the status.
+  const saveRequestRef = useRef(0);
   const persist = useCallback(async (next: ReviewState) => {
     setReview(next);
     if (!canSave) {
       setSaveState(saveLocalReview(bundle.id, next) ? "local" : "error");
       return;
     }
-    setSaveState("saving");
+    const request = ++saveRequestRef.current;
+    const slow = window.setTimeout(() => { if (saveRequestRef.current === request) setSaveState("saving"); }, 300);
+    let outcome: "saved" | "error" = "error";
     try {
       const response = await fetch(`/api/review/${bundle.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next),
       });
-      setSaveState(response.ok ? "saved" : "error");
+      outcome = response.ok ? "saved" : "error";
     } catch {
-      setSaveState("error");
+      outcome = "error";
     }
+    window.clearTimeout(slow);
+    if (saveRequestRef.current === request) setSaveState(outcome);
   }, [bundle.id, canSave]);
 
   const describeItem = useCallback((target: BundleItem, position: number) => {
@@ -286,12 +309,12 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
               })}
             </div>
             <span className="progress-text">
-              {progress.decided}/{progress.total} reviewed · {progress.approvedUnchanged} approved · {progress.edited} edited · {progress.rejected} rejected · {saveText}
+              {progress.decided}/{progress.total} reviewed · {progress.approvedUnchanged} approved · {progress.edited} edited · {progress.rejected} rejected · <span className="save-state">{saveText}</span>
             </span>
           </div>
         </div>
         <div className="actions-row">
-          <button type="button" className="btn" onClick={publish}>{review.publishedAt ? "Published ✓" : "Publish"}</button>
+          <button type="button" className="btn publish" onClick={publish}>{review.publishedAt ? "Published ✓" : "Publish"}</button>
           <Link className="btn primary" href={`/watch/${bundle.id}`}>Watch with descriptions</Link>
         </div>
       </div>
@@ -299,7 +322,7 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
       <div className="review-grid">
         <nav aria-label="Items to review" className="item-nav">
           {!canSave && <p className="notice">Demo mode: decisions are saved in this browser only, and the player on this device uses them.</p>}
-          <ol className="item-list">
+          <ol className="item-list" ref={listRef}>
             {items.map((listItem, listIndex) => {
               const entry = listStatus(listItem, itemStatus(listItem, review));
               return (
@@ -317,7 +340,8 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
 
         <div className="evidence-col">
           <h2 className="visually-hidden">Evidence</h2>
-          <EvidenceView item={item} frameSize={bundle.frameSize} />
+          {/* Keyed by item: the old frame and its boxes never show together with the new ones. */}
+          <EvidenceView key={item.referenceId} item={item} frameSize={bundle.frameSize} />
           <div className="evidence-caption">
             <p>Frame at {item.refinedTime.toFixed(1)} s · green: the object Name It chose</p>
             <button type="button" className="btn small" onClick={previewCue} aria-keyshortcuts="P">Hear it <span className="key">P</span></button>
@@ -330,6 +354,7 @@ export function ReviewApp({ bundle, canSave }: { bundle: VideoBundle; canSave: b
           <video
             ref={videoRef}
             className="clip-video"
+            style={{ aspectRatio: `${bundle.frameSize.width} / ${bundle.frameSize.height}` }}
             src={bundle.videoUrl}
             preload="metadata"
             playsInline
