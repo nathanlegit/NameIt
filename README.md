@@ -1,6 +1,6 @@
 # Name It
 
-Name It tells blind viewers what “this” is.
+Name It tells blind and low vision viewers what “this” is.
 
 How-to presenters point and say “add this”, “about this much”, “until it looks like this”. If you can't see the screen, you hear the words but not the thing. Name It finds those moments in a video, looks at the frames to work out what “this” is, and writes a short audio description that fits into the pause after the sentence. A volunteer describer checks the drafts, and an accessible player reads them out.
 
